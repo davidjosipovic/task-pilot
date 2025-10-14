@@ -16,3 +16,6 @@ applications:
         paths:
           - node_modules/**/*
     appRoot: frontend
+    environment:
+      variables:
+        VITE_API_URL: 'http://task-pilot-backend-env.eba-hmed7agp.us-east-1.elasticbeanstalk.com/graphql'
