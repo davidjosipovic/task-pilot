@@ -8,11 +8,12 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy source code
-COPY . .
+# Copy TypeScript config and source
+COPY tsconfig.json ./
+COPY src ./src
 
 # Expose port
 EXPOSE 4000
 
-# Start the application
-CMD ["npx", "ts-node-dev", "src/index.ts"]
+# Start application with ts-node
+CMD ["npx", "ts-node", "src/index.ts"]

@@ -15,10 +15,35 @@ import { authMiddleware } from './middleware/auth';
 dotenv.config();
 
 const app = express();
+
+// Allow multiple origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://main.d3gxu1z7qiv7tn.amplifyapp.com', // Your AWS Amplify frontend
+  /\.amplifyapp\.com$/ // Allow any Amplify domain
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list or matches pattern
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') return allowed === origin;
+      if (allowed instanceof RegExp) return allowed.test(origin);
+      return false;
+    });
+    
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
+
 app.use(express.json());
 app.use(authMiddleware);
 
@@ -36,10 +61,7 @@ async function startServer() {
   server.applyMiddleware({ 
     app, 
     path: '/graphql',
-    cors: {
-      origin: 'http://localhost:5173',
-      credentials: true,
-    }
+    cors: false // Disable Apollo's CORS, use Express CORS instead
   });
 
   const PORT = process.env.PORT || 4000;
