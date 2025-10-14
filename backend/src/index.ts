@@ -47,6 +47,19 @@ app.use(cors({
 app.use(express.json());
 app.use(authMiddleware);
 
+// Health check endpoint for AWS Elastic Beanstalk
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    message: 'TaskPilot Backend API',
+    graphql: '/graphql'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 const mergedTypeDefs = mergeTypeDefs([typeDefs, projectTaskTypeDefs]);
 const mergedResolvers = mergeResolvers([userResolver, projectTaskResolver]);
 
