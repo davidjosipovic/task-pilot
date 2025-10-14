@@ -2,12 +2,22 @@
 
 A full-stack project management application built with modern web technologies. TaskPilot helps teams organize projects and manage tasks using an intuitive Kanban board interface with drag-and-drop functionality.
 
+## 🚀 Live Demo
+
+**Try it now:** [https://main.d3gxu1z7qiv7tn.amplifyapp.com](https://main.d3gxu1z7qiv7tn.amplifyapp.com)
+
+- **Frontend**: AWS Amplify
+- **Backend API**: AWS Elastic Beanstalk
+- **Database**: MongoDB Atlas
+
+![Build Status](https://img.shields.io/github/actions/workflow/status/davidjosipovic/task-pilot/ci.yml?branch=main&style=for-the-badge)
 ![Tech Stack](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
 
 ## ✨ Features
 
@@ -18,7 +28,9 @@ A full-stack project management application built with modern web technologies. 
 - 👥 **Team Collaboration** - Multi-user project access
 - 🎨 **Modern UI** - Beautiful, responsive interface with TailwindCSS
 - 🧪 **Fully Tested** - 35 comprehensive tests (100% passing)
-- 🐳 **Docker Ready** - Easy deployment with Docker Compose
+- 🐳 **Docker Ready** - Containerized with Docker Compose
+- ☁️ **Cloud Deployed** - Live on AWS (Amplify + Elastic Beanstalk)
+- 🔄 **CI/CD Pipeline** - Automated testing and deployment with GitHub Actions
 
 ## 🛠️ Tech Stack
 
@@ -41,6 +53,14 @@ A full-stack project management application built with modern web technologies. 
 - **Vite** - Build tool
 - **Vitest** - Testing framework
 
+### DevOps & Cloud
+- **Docker** - Containerization
+- **Docker Compose** - Multi-container orchestration
+- **AWS Amplify** - Frontend hosting & CI/CD
+- **AWS Elastic Beanstalk** - Backend hosting
+- **MongoDB Atlas** - Cloud database
+- **GitHub Actions** - Automated testing & deployment
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -52,7 +72,7 @@ A full-stack project management application built with modern web technologies. 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/task-pilot.git
+git clone https://github.com/davidjosipovic/task-pilot.git
 cd task-pilot
 
 # Start all services with Docker Compose
@@ -232,48 +252,51 @@ docker compose down -v
 
 ## 🚢 Deployment
 
-### Deploy to Production
+### Production Deployment (AWS)
 
-1. **Backend** - Deploy to Heroku, Railway, or AWS
-2. **Frontend** - Deploy to Vercel, Netlify, or AWS Amplify
-3. **Database** - Use MongoDB Atlas
+**Live Application**: [https://main.d3gxu1z7qiv7tn.amplifyapp.com](https://main.d3gxu1z7qiv7tn.amplifyapp.com)
+
+#### Architecture:
+- **Frontend**: AWS Amplify (auto-deploys from `main` branch)
+- **Backend**: AWS Elastic Beanstalk (Docker)
+- **Database**: MongoDB Atlas (M0 Free Tier)
+- **CI/CD**: GitHub Actions (automated testing & deployment)
+
+#### Deployment Workflow:
+```
+Push to GitHub (main)
+  ↓
+GitHub Actions CI/CD
+  ↓ 
+Run Tests (Jest + Vitest)
+  ↓
+Build Docker Images
+  ↓
+Deploy Backend to AWS EB
+  ↓
+Deploy Frontend to AWS Amplify
+  ↓
+🎉 Live!
+```
+
+### Manual Deployment
+
+See [AWS_DEPLOYMENT.md](./AWS_DEPLOYMENT.md) for detailed deployment instructions.
 
 ### Environment Variables (Production)
 ```env
-MONGODB_URI=mongodb+srv://...
-JWT_SECRET=strong-random-secret
-NODE_ENV=production
-```
-
-## 📊 Performance Optimizations
-
-- Apollo Client caching
-- React component memoization
-- Efficient GraphQL queries
-- Code splitting with Vite
-- Optimized bundle size
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👨‍💻 Author
-
-**David** - Full Stack Developer
+MONGO_URI=***REMOVED***
+- Portfolio: [https://main.d3gxu1z7qiv7tn.amplifyapp.com](https://main.d3gxu1z7qiv7tn.amplifyapp.com)
 
 ## 🙏 Acknowledgments
 
-- Built with modern best practices
+- Built with modern best practices and industry standards
 - Inspired by Trello and Jira
-- Comprehensive testing approach
-- Production-ready architecture
+- Comprehensive testing approach with 100% passing tests
+- Production-ready architecture deployed on AWS
+- Automated CI/CD pipeline with GitHub Actions
 
 ---
 
 **⭐ If you find this project useful, please consider giving it a star!**
-# Auto-deploy configured
 
