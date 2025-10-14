@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: taskpilot-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - taskpilot-network
+
+  backend:
+    build: ./backend
+    container_name: taskpilot-backend
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/taskpilot
+      - JWT_SECRET=dev_secret_change_in_production
+      - NODE_ENV=development
+    depends_on:
+      - mongodb
+    networks:
+      - taskpilot-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    container_name: taskpilot-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:4000/graphql
+    depends_on:
+      - backend
+    networks:
+      - taskpilot-network
+
+networks:
+  taskpilot-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
