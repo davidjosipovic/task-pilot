@@ -72,7 +72,7 @@ const server = new ApolloServer({
 async function startServer() {
   await server.start();
   server.applyMiddleware({ 
-    app, 
+    app: app as any, 
     path: '/graphql',
     cors: false // Disable Apollo's CORS, use Express CORS instead
   });
