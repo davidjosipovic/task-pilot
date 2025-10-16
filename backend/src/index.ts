@@ -48,7 +48,7 @@ app.use(cors({
 app.use(express.json());
 app.use(authMiddleware);
 
-// Health check endpoint for AWS Elastic Beanstalk
+// Health check endpoints
 app.get('/', (req, res) => {
   res.status(200).json({ 
     status: 'healthy',
@@ -68,16 +68,21 @@ const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
   context: ({ req }) => ({ req }),
+  cache: 'bounded', // Fix unbounded cache warning
 });
 
 async function startServer() {
   try {
     const PORT = parseInt(process.env.PORT || '4000', 10);
+    // Railway provides RAILWAY_PUBLIC_DOMAIN automatically, or use PUBLIC_URL for other platforms
+    const publicUrl = process.env.RAILWAY_PUBLIC_DOMAIN 
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+      : process.env.PUBLIC_URL || `http://localhost:${PORT}`;
     
     // Start listening FIRST before connecting to MongoDB
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🔗 Health: http://localhost:${PORT}/health`);
+      console.log(`🔗 Health: ${publicUrl}/health`);
     });
     
     // Then connect to MongoDB (don't crash if it fails)
@@ -95,7 +100,7 @@ async function startServer() {
       path: '/graphql',
       cors: false // Disable Apollo's CORS, use Express CORS instead
     });
-    console.log('✅ GraphQL server started');
+    console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
     
   } catch (error) {
     console.error('❌ Startup error:', error);
