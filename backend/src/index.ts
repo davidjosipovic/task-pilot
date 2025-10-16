@@ -80,9 +80,14 @@ async function startServer() {
       console.log(`🔗 Health: http://localhost:${PORT}/health`);
     });
     
-    // Then connect to MongoDB and start Apollo
-    await mongoose.connect(process.env.MONGO_URI || '', {});
-    console.log('✅ Connected to MongoDB');
+    // Then connect to MongoDB (don't crash if it fails)
+    try {
+      await mongoose.connect(process.env.MONGO_URI || '', {});
+      console.log('✅ Connected to MongoDB');
+    } catch (dbError) {
+      console.error('⚠️  MongoDB connection failed:', dbError);
+      console.log('⚠️  Server running without database connection');
+    }
     
     await server.start();
     server.applyMiddleware({ 
