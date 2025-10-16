@@ -18,4 +18,4 @@ applications:
     appRoot: frontend
     environment:
       variables:
-        VITE_API_URL: 'https://task-pilot-backend-env.eba-hmed7agp.us-east-1.elasticbeanstalk.com/graphql'
+          VITE_API_URL: 'https://task-pilot-backend.onrender.com/graphql'
