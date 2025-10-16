@@ -67,7 +67,12 @@ jobs:
         docker compose ps
         docker compose down
 
-  # Deployment is handled automatically by:
-  # - Render.com for backend (via render.yaml)
-  # - AWS Amplify for frontend (via amplify.yml)
-  # Both auto-deploy on push to main branch
+  deploy-backend:
+    needs: [test-backend, test-frontend, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Trigger Render Deployment
+      run: |
+        curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
