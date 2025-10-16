@@ -15,6 +15,18 @@ const GET_PROJECTS = gql`
   }
 `;
 
+// Import GET_ARCHIVED_PROJECTS query to refetch it after archive
+const GET_ARCHIVED_PROJECTS = gql`
+  query GetArchivedProjects {
+    getArchivedProjects {
+      id
+      title
+      description
+      archived
+    }
+  }
+`;
+
 const CREATE_PROJECT = gql`
   mutation CreateProject($title: String!, $description: String) {
     createProject(title: $title, description: $description) {
@@ -128,7 +140,7 @@ const Dashboard: React.FC = () => {
         variables: { id },
         refetchQueries: [
           { query: GET_PROJECTS },
-          'GetArchivedProjects' // Refetch archived projects list too
+          { query: GET_ARCHIVED_PROJECTS } // Refetch Archive page projects
         ],
         optimisticResponse: {
           archiveProject: {

@@ -4,6 +4,18 @@ import { useQuery, useMutation } from '@apollo/client/react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
+// Import GET_PROJECTS query to refetch it after unarchive
+const GET_PROJECTS = gql`
+  query GetProjects {
+    getProjects {
+      id
+      title
+      description
+      archived
+    }
+  }
+`;
+
 const GET_ARCHIVED_PROJECTS = gql`
   query GetArchivedProjects {
     getArchivedProjects {
@@ -55,7 +67,7 @@ const Archive: React.FC = () => {
         variables: { id },
         refetchQueries: [
           { query: GET_ARCHIVED_PROJECTS },
-          'GetProjects' // Refetch active projects list too
+          { query: GET_PROJECTS } // Refetch Dashboard projects
         ],
         optimisticResponse: {
           unarchiveProject: {
