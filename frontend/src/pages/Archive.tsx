@@ -1,0 +1,114 @@
+import React from 'react';
+import { gql } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
+import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+
+const GET_ARCHIVED_PROJECTS = gql`
+  query GetArchivedProjects {
+    getArchivedProjects {
+      id
+      title
+      description
+      archived
+    }
+  }
+`;
+
+const UNARCHIVE_PROJECT = gql`
+  mutation UnarchiveProject($id: ID!) {
+    unarchiveProject(id: $id) {
+      id
+      title
+      archived
+    }
+  }
+`;
+
+interface Project {
+  id: string;
+  title: string;
+  description?: string;
+  archived: boolean;
+}
+
+interface GetArchivedProjectsData {
+  getArchivedProjects: Project[];
+}
+
+const Archive: React.FC = () => {
+  const { data, loading, error, refetch } = useQuery<GetArchivedProjectsData>(GET_ARCHIVED_PROJECTS);
+  const [unarchiveProject] = useMutation(UNARCHIVE_PROJECT);
+
+  const handleUnarchive = async (id: string) => {
+    try {
+      await unarchiveProject({ variables: { id } });
+      refetch();
+    } catch (err) {
+      console.error('Failed to unarchive project:', err);
+      alert('Failed to unarchive project. Please try again.');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <Navbar />
+      <main className="p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Archived Projects</h1>
+          <p className="text-gray-600 mt-1">View and restore your archived projects</p>
+        </div>
+
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+            {error.message}
+          </div>
+        )}
+
+        {!loading && !error && data?.getArchivedProjects?.length === 0 && (
+          <div className="text-center py-20">
+            <div className="text-gray-400 text-6xl mb-4">📦</div>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No archived projects</h3>
+            <p className="text-gray-500">Archived projects will appear here</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data?.getArchivedProjects?.map((project) => (
+            <div 
+              key={project.id}
+              className="relative bg-white rounded-xl shadow-md p-6 border border-gray-200 opacity-80 hover:opacity-100 transition"
+            >
+              <Link to={`/project/${project.id}`} className="block">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="font-bold text-xl text-gray-700">{project.title}</h3>
+                  <span className="text-2xl">📦</span>
+                </div>
+                <p className="text-gray-500 text-sm line-clamp-2 mb-3">
+                  {project.description || 'No description'}
+                </p>
+                <div className="text-gray-400 text-xs font-medium mb-4">
+                  🔒 Read-only (Archived)
+                </div>
+              </Link>
+              <button
+                onClick={() => handleUnarchive(project.id)}
+                className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg px-4 py-2 text-sm font-semibold transition shadow-md"
+              >
+                ↻ Restore Project
+              </button>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Archive;

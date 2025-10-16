@@ -28,6 +28,12 @@ const Navbar: React.FC = () => {
             >
               Dashboard
             </Link>
+            <Link 
+              to="/archive" 
+              className="hover:text-blue-200 transition duration-200 font-medium px-4 py-2 rounded-lg hover:bg-blue-500/30"
+            >
+              📦 Archive
+            </Link>
             <button 
               onClick={handleLogout} 
               className="bg-white text-blue-600 px-5 py-2 rounded-lg font-semibold hover:bg-blue-50 transition duration-200 shadow-md hover:shadow-lg"

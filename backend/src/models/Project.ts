@@ -5,6 +5,7 @@ export interface IProject extends Document {
   description: string;
   owner: Types.ObjectId;
   members: Types.ObjectId[];
+  archived: boolean;
 }
 
 const ProjectSchema = new Schema<IProject>({
@@ -12,6 +13,7 @@ const ProjectSchema = new Schema<IProject>({
   description: { type: String },
   owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  archived: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export default mongoose.model<IProject>('Project', ProjectSchema);

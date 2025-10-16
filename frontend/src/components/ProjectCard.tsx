@@ -5,15 +5,25 @@ interface ProjectCardProps {
   id: string;
   title: string;
   description?: string;
+  archived?: boolean;
   onDelete: (id: string) => void;
+  onArchive?: (id: string) => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ id, title, description, onDelete }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ id, title, description, archived, onDelete, onArchive }) => {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (confirm(`Are you sure you want to delete "${title}"? This will also delete all tasks in this project.`)) {
       onDelete(id);
+    }
+  };
+
+  const handleArchive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onArchive && confirm(`Archive "${title}"? You can restore it later from the Archive page.`)) {
+      onArchive(id);
     }
   };
 
@@ -29,13 +39,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ id, title, description, onDel
           View Project →
         </div>
       </Link>
-      <button
-        onClick={handleDelete}
-        className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-1 text-xs font-semibold shadow-md"
-        title="Delete project"
-      >
-        🗑️ Delete
-      </button>
+      <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onArchive && !archived && (
+          <button
+            onClick={handleArchive}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg px-3 py-1 text-xs font-semibold shadow-md"
+            title="Archive project"
+          >
+            📦 Archive
+          </button>
+        )}
+        <button
+          onClick={handleDelete}
+          className="bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-1 text-xs font-semibold shadow-md"
+          title="Delete project"
+        >
+          🗑️ Delete
+        </button>
+      </div>
     </div>
   );
 };

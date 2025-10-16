@@ -10,6 +10,7 @@ const GET_PROJECTS = gql`
       id
       title
       description
+      archived
     }
   }
 `;
@@ -20,6 +21,7 @@ const CREATE_PROJECT = gql`
       id
       title
       description
+      archived
     }
   }
 `;
@@ -30,10 +32,20 @@ const DELETE_PROJECT = gql`
   }
 `;
 
+const ARCHIVE_PROJECT = gql`
+  mutation ArchiveProject($id: ID!) {
+    archiveProject(id: $id) {
+      id
+      archived
+    }
+  }
+`;
+
 interface Project {
   id: string;
   title: string;
   description?: string;
+  archived?: boolean;
 }
 
 interface GetProjectsData {
@@ -53,6 +65,7 @@ const Dashboard: React.FC = () => {
   const { data, loading, error, refetch } = useQuery<GetProjectsData>(GET_PROJECTS);
   const [createProject, { loading: creating }] = useMutation<CreateProjectData, CreateProjectVars>(CREATE_PROJECT);
   const [deleteProject] = useMutation(DELETE_PROJECT);
+  const [archiveProject] = useMutation(ARCHIVE_PROJECT);
   
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
@@ -74,6 +87,16 @@ const Dashboard: React.FC = () => {
     } catch (err) {
       console.error('Failed to delete project:', err);
       alert('Failed to delete project. Please try again.');
+    }
+  };
+
+  const handleArchive = async (id: string) => {
+    try {
+      await archiveProject({ variables: { id } });
+      refetch();
+    } catch (err) {
+      console.error('Failed to archive project:', err);
+      alert('Failed to archive project. Please try again.');
     }
   };
 
@@ -159,7 +182,7 @@ const Dashboard: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data?.getProjects?.map((project) => (
-              <ProjectCard key={project.id} {...project} onDelete={handleDelete} />
+              <ProjectCard key={project.id} {...project} onDelete={handleDelete} onArchive={handleArchive} />
             ))}
           </div>
         </main>

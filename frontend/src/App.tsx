@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Project from './pages/Project';
+import Archive from './pages/Archive';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -47,6 +48,7 @@ const App: React.FC = () => (
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/project/:id" element={<Project />} />
+            <Route path="/archive" element={<Archive />} />
           </Route>
           <Route path="*" element={<Login />} />
         </Routes>
