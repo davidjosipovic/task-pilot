@@ -5,8 +5,9 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: cd backend && npm install && npm install typescript @types/node --save-dev && npx tsc
-    startCommand: cd backend && node dist/index.js
+    rootDir: backend
+    buildCommand: npm install && npm install typescript @types/node --save-dev && npx tsc
+    startCommand: node dist/index.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
