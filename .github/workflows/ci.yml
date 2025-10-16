@@ -67,12 +67,6 @@ jobs:
         docker compose ps
         docker compose down
 
-  deploy-backend:
-    needs: [test-backend, test-frontend, build]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Trigger Render Deployment
-      run: |
-        curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+  # Deployment handled by:
+  # - Render.com auto-deploys backend from main branch
+  # - AWS Amplify auto-deploys frontend from main branch
