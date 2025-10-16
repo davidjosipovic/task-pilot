@@ -18,4 +18,4 @@ applications:
     appRoot: frontend
     environment:
       variables:
-          VITE_API_URL: 'https://task-pilot-backend.onrender.com/graphql'
+          VITE_API_URL: 'https://task-pilot-backend-production.up.railway.app/graphql'
