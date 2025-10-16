@@ -10,6 +10,10 @@
         {
           "hostPort": 4000,
           "containerPort": 4000
+        },
+        {
+          "hostPort": 443,
+          "containerPort": 443
         }
       ],
       "environment": [

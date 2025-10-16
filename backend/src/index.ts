@@ -4,6 +4,10 @@ import { ApolloServer } from 'apollo-server-express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import https from 'https';
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
 import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge';
 
 import typeDefs from './schemas/typeDefs';
@@ -78,10 +82,42 @@ async function startServer() {
   });
 
   const PORT = process.env.PORT || 4000;
+  const HTTPS_PORT = 443;
+  
   await mongoose.connect(process.env.MONGO_URI || '', {});
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}/graphql`);
-  });
+  
+  // Check if SSL certificates exist
+  const certPath = path.join(__dirname, '../certs/server.crt');
+  const keyPath = path.join(__dirname, '../certs/server.key');
+  
+  if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    // Start HTTPS server
+    const httpsOptions = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath)
+    };
+    
+    const httpsServer = https.createServer(httpsOptions, app);
+    httpsServer.listen(HTTPS_PORT, () => {
+      console.log(`🔒 HTTPS Server running on https://localhost:${HTTPS_PORT}/graphql`);
+    });
+    
+    // Also start HTTP server that redirects to HTTPS
+    const httpApp = express();
+    httpApp.use((req, res) => {
+      res.redirect(301, `https://${req.headers.host}${req.url}`);
+    });
+    const httpServer = http.createServer(httpApp);
+    httpServer.listen(PORT, () => {
+      console.log(`🔓 HTTP Server redirecting to HTTPS on port ${PORT}`);
+    });
+  } else {
+    // Fallback to HTTP only
+    console.log('⚠️  SSL certificates not found, starting HTTP server only');
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}/graphql`);
+    });
+  }
 }
 
 startServer();
