@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -38,7 +38,14 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [registerUser, { loading, error }] = useMutation<RegisterUserData, RegisterUserVars>(REGISTER_USER);
   const navigate = useNavigate();
-  const { setToken } = useAuth();
+  const { setToken, token } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (token) {
+      navigate('/dashboard');
+    }
+  }, [token, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
