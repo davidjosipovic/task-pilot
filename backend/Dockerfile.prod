@@ -2,31 +2,26 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install OpenSSL for certificate generation
-RUN apk add --no-cache openssl
-
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm ci --only=production
 
+# Install TypeScript for build
+RUN npm install typescript @types/node --save-dev
+
 # Copy source code
 COPY . .
 
-# Copy certificate generation script
-COPY generate-cert.sh /app/generate-cert.sh
-RUN chmod +x /app/generate-cert.sh
-
 # Build TypeScript
-RUN npm install typescript @types/node --save-dev
 RUN npx tsc
 
-# Expose ports (HTTP and HTTPS)
-EXPOSE 4000 443
+# Remove dev dependencies to save space
+RUN npm prune --production
 
-# Use the certificate generation script as entrypoint
-ENTRYPOINT ["/app/generate-cert.sh"]
+# Expose port
+EXPOSE 10000
 
 # Start production server
 CMD ["node", "dist/index.js"]
