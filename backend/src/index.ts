@@ -72,22 +72,26 @@ const server = new ApolloServer({
 
 async function startServer() {
   try {
+    const PORT = parseInt(process.env.PORT || '4000', 10);
+    
+    // Start listening FIRST before connecting to MongoDB
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🔗 Health: http://localhost:${PORT}/health`);
+    });
+    
+    // Then connect to MongoDB and start Apollo
+    await mongoose.connect(process.env.MONGO_URI || '', {});
+    console.log('✅ Connected to MongoDB');
+    
     await server.start();
     server.applyMiddleware({ 
       app: app as any, 
       path: '/graphql',
       cors: false // Disable Apollo's CORS, use Express CORS instead
     });
-
-    const PORT = parseInt(process.env.PORT || '4000', 10);
+    console.log('✅ GraphQL server started');
     
-    await mongoose.connect(process.env.MONGO_URI || '', {});
-    console.log('✅ Connected to MongoDB');
-    
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🔗 GraphQL: http://localhost:${PORT}/graphql`);
-    });
   } catch (error) {
     console.error('❌ Startup error:', error);
     process.exit(1);
