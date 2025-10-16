@@ -61,11 +61,19 @@ interface CreateProjectVars {
   description?: string;
 }
 
+interface ArchiveProjectData {
+  archiveProject: {
+    __typename?: string;
+    id: string;
+    archived: boolean;
+  };
+}
+
 const Dashboard: React.FC = () => {
-  const { data, loading, error, refetch } = useQuery<GetProjectsData>(GET_PROJECTS);
+  const { data, loading, error } = useQuery<GetProjectsData>(GET_PROJECTS);
   const [createProject, { loading: creating }] = useMutation<CreateProjectData, CreateProjectVars>(CREATE_PROJECT);
   const [deleteProject] = useMutation(DELETE_PROJECT);
-  const [archiveProject] = useMutation(ARCHIVE_PROJECT);
+  const [archiveProject] = useMutation<ArchiveProjectData>(ARCHIVE_PROJECT);
   
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
@@ -73,17 +81,41 @@ const Dashboard: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createProject({ variables: { title, description } });
-    setTitle('');
-    setDescription('');
-    setShowForm(false);
-    refetch();
+    try {
+      await createProject({ 
+        variables: { title, description },
+        refetchQueries: [{ query: GET_PROJECTS }]
+      });
+      setTitle('');
+      setDescription('');
+      setShowForm(false);
+    } catch (err) {
+      console.error('Failed to create project:', err);
+      alert('Failed to create project. Please try again.');
+    }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteProject({ variables: { id } });
-      refetch();
+      await deleteProject({ 
+        variables: { id },
+        refetchQueries: [{ query: GET_PROJECTS }],
+        optimisticResponse: {
+          deleteProject: true
+        },
+        update: (cache) => {
+          // Remove project from cache immediately
+          const existingData = cache.readQuery<GetProjectsData>({ query: GET_PROJECTS });
+          if (existingData) {
+            cache.writeQuery({
+              query: GET_PROJECTS,
+              data: {
+                getProjects: existingData.getProjects.filter(p => p.id !== id)
+              }
+            });
+          }
+        }
+      });
     } catch (err) {
       console.error('Failed to delete project:', err);
       alert('Failed to delete project. Please try again.');
@@ -92,8 +124,34 @@ const Dashboard: React.FC = () => {
 
   const handleArchive = async (id: string) => {
     try {
-      await archiveProject({ variables: { id } });
-      refetch();
+      await archiveProject({ 
+        variables: { id },
+        refetchQueries: [
+          { query: GET_PROJECTS },
+          'GetArchivedProjects' // Refetch archived projects list too
+        ],
+        optimisticResponse: {
+          archiveProject: {
+            __typename: 'Project',
+            id,
+            archived: true
+          }
+        },
+        update: (cache, { data }) => {
+          if (!data?.archiveProject) return;
+          
+          // Remove from active projects immediately
+          const existingData = cache.readQuery<GetProjectsData>({ query: GET_PROJECTS });
+          if (existingData) {
+            cache.writeQuery({
+              query: GET_PROJECTS,
+              data: {
+                getProjects: existingData.getProjects.filter(p => p.id !== id)
+              }
+            });
+          }
+        }
+      });
     } catch (err) {
       console.error('Failed to archive project:', err);
       alert('Failed to archive project. Please try again.');

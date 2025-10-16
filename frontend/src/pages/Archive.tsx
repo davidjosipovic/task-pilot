@@ -36,14 +36,50 @@ interface GetArchivedProjectsData {
   getArchivedProjects: Project[];
 }
 
+interface UnarchiveProjectData {
+  unarchiveProject: {
+    __typename?: string;
+    id: string;
+    title: string;
+    archived: boolean;
+  };
+}
+
 const Archive: React.FC = () => {
-  const { data, loading, error, refetch } = useQuery<GetArchivedProjectsData>(GET_ARCHIVED_PROJECTS);
-  const [unarchiveProject] = useMutation(UNARCHIVE_PROJECT);
+  const { data, loading, error } = useQuery<GetArchivedProjectsData>(GET_ARCHIVED_PROJECTS);
+  const [unarchiveProject] = useMutation<UnarchiveProjectData>(UNARCHIVE_PROJECT);
 
   const handleUnarchive = async (id: string) => {
     try {
-      await unarchiveProject({ variables: { id } });
-      refetch();
+      await unarchiveProject({ 
+        variables: { id },
+        refetchQueries: [
+          { query: GET_ARCHIVED_PROJECTS },
+          'GetProjects' // Refetch active projects list too
+        ],
+        optimisticResponse: {
+          unarchiveProject: {
+            __typename: 'Project',
+            id,
+            title: '', // Will be replaced by real data
+            archived: false
+          }
+        },
+        update: (cache, { data }) => {
+          if (!data?.unarchiveProject) return;
+          
+          // Remove from archived projects immediately
+          const existingData = cache.readQuery<GetArchivedProjectsData>({ query: GET_ARCHIVED_PROJECTS });
+          if (existingData) {
+            cache.writeQuery({
+              query: GET_ARCHIVED_PROJECTS,
+              data: {
+                getArchivedProjects: existingData.getArchivedProjects.filter(p => p.id !== id)
+              }
+            });
+          }
+        }
+      });
     } catch (err) {
       console.error('Failed to unarchive project:', err);
       alert('Failed to unarchive project. Please try again.');

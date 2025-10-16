@@ -34,7 +34,24 @@ const authLink = setContext((_, { headers }) => {
 
 const client = new ApolloClient({
   link: from([authLink, httpLink]),
-  cache: new InMemoryCache(), 
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          getProjects: {
+            merge(_existing = [], incoming) {
+              return incoming;
+            },
+          },
+          getArchivedProjects: {
+            merge(_existing = [], incoming) {
+              return incoming;
+            },
+          },
+        },
+      },
+    },
+  }), 
 });
 
 const App: React.FC = () => (
