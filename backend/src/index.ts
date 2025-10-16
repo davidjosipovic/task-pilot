@@ -21,7 +21,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://main.d3gxu1z7qiv7tn.amplifyapp.com', // Your AWS Amplify frontend
   /\.amplifyapp\.com$/, // Allow any Amplify domain
-  /\.onrender\.com$/ // Allow Render frontend (if needed)
+  /\.railway\.app$/ // Allow Railway domains
 ];
 
 app.use(cors({
@@ -71,21 +71,27 @@ const server = new ApolloServer({
 });
 
 async function startServer() {
-  await server.start();
-  server.applyMiddleware({ 
-    app: app as any, 
-    path: '/graphql',
-    cors: false // Disable Apollo's CORS, use Express CORS instead
-  });
+  try {
+    await server.start();
+    server.applyMiddleware({ 
+      app: app as any, 
+      path: '/graphql',
+      cors: false // Disable Apollo's CORS, use Express CORS instead
+    });
 
-  const PORT = process.env.PORT || 4000;
-  
-  await mongoose.connect(process.env.MONGO_URI || '', {});
-  
-  app.listen(PORT, () => {
-    console.log(`� Server running on port ${PORT}`);
-    console.log(`� GraphQL endpoint: http://localhost:${PORT}/graphql`);
-  });
+    const PORT = parseInt(process.env.PORT || '4000', 10);
+    
+    await mongoose.connect(process.env.MONGO_URI || '', {});
+    console.log('✅ Connected to MongoDB');
+    
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🔗 GraphQL: http://localhost:${PORT}/graphql`);
+    });
+  } catch (error) {
+    console.error('❌ Startup error:', error);
+    process.exit(1);
+  }
 }
 
 startServer();
