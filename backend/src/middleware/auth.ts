@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 
@@ -14,9 +15,11 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
     try {
       const payload = jwt.verify(token, JWT_SECRET) as { userId: string };
       req.userId = payload.userId;
+      logger.debug('Auth token verified', { userId: req.userId });
     } catch (err) {
       // Invalid token
       req.userId = undefined;
+      logger.warn('Invalid token attempt', { error: (err as Error).message });
     }
   }
   next();

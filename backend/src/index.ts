@@ -10,6 +10,8 @@ import projectTaskTypeDefs from './schemas/projectTaskTypeDefs';
 import userResolver from './resolvers/userResolver';
 import projectTaskResolver from './resolvers/projectTaskResolver';
 import { authMiddleware } from './middleware/auth';
+import logger from './utils/logger';
+import { loggingPlugin } from './plugins/loggingPlugin';
 
 dotenv.config();
 
@@ -68,6 +70,7 @@ const server = new ApolloServer({
   resolvers: mergedResolvers,
   context: ({ req }) => ({ req }),
   cache: 'bounded', // Fix unbounded cache warning
+  plugins: [loggingPlugin],
 });
 
 async function startServer() {

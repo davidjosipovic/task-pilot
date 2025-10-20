@@ -3,6 +3,7 @@ import Task, { TaskStatus } from '../models/Task';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import mongoose from 'mongoose';
+import logger from '../utils/logger';
 
 const projectTaskResolver = {
   Query: {
@@ -43,6 +44,7 @@ const projectTaskResolver = {
         owner: userObjectId,
         members: [userObjectId],
       });
+      logger.info('Project created', { projectId: project._id, userId: context.req.userId, title });
       return project;
     },
     deleteProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
@@ -52,6 +54,7 @@ const projectTaskResolver = {
       if (String(project.owner) !== context.req.userId) throw new Error('Not authorized');
       await Project.findByIdAndDelete(id);
       await Task.deleteMany({ projectId: id });
+      logger.info('Project deleted', { projectId: id, userId: context.req.userId });
       return true;
     },
     archiveProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
@@ -61,6 +64,7 @@ const projectTaskResolver = {
       if (String(project.owner) !== context.req.userId) throw new Error('Not authorized - only owner can archive');
       project.archived = true;
       await project.save();
+      logger.info('Project archived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
     unarchiveProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
@@ -70,6 +74,7 @@ const projectTaskResolver = {
       if (String(project.owner) !== context.req.userId) throw new Error('Not authorized - only owner can unarchive');
       project.archived = false;
       await project.save();
+      logger.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
     createTask: async (_: any, { projectId, title, description, assignedUser }: { projectId: string; title: string; description?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
@@ -88,6 +93,7 @@ const projectTaskResolver = {
         assignedUser: assignedUserId,
         projectId,
       });
+      logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title });
       return task;
     },
     updateTask: async (_: any, { id, title, description, status, assignedUser }: { id: string; title?: string; description?: string; status?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
@@ -105,6 +111,7 @@ const projectTaskResolver = {
       if (status !== undefined) task.status = status as TaskStatus;
       if (assignedUser !== undefined) task.assignedUser = new mongoose.Types.ObjectId(assignedUser);
       await task.save();
+      logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status });
       return task;
     },
     deleteTask: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
@@ -118,6 +125,7 @@ const projectTaskResolver = {
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
       if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
       await Task.findByIdAndDelete(id);
+      logger.info('Task deleted', { taskId: id, projectId: task.projectId, userId: context.req.userId });
       return true;
     },
   },
