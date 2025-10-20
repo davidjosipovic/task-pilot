@@ -7,6 +7,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import Navbar from '../components/Navbar';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
+import { ConfirmDialog, useConfirm } from '../components/ConfirmDialog';
 
 const GET_PROJECT = gql`
   query GetProject($id: ID!) {
@@ -183,6 +184,8 @@ const Project: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('TODO');
+  
+  const { confirmDialog, openConfirm } = useConfirm();
 
   const isArchived = projectData?.getProject?.archived || false;
 
@@ -205,8 +208,18 @@ const Project: React.FC = () => {
   };
 
   const handleDelete = async (taskId: string) => {
-    if (confirm('Delete this task?')) {
+    const confirmed = await openConfirm({
+      title: 'Delete Task?',
+      message: 'This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    
+    if (confirmed) {
       await deleteTask({ variables: { id: taskId } });
+      setEditingTask(null);
+      setShowModal(false);
       refetch();
     }
   };
@@ -383,6 +396,9 @@ const Project: React.FC = () => {
               </div>
             </form>
           </TaskModal>
+          {confirmDialog && (
+            <ConfirmDialog {...confirmDialog} />
+          )}
         </main>
       </div>
     </DndProvider>
