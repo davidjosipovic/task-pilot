@@ -147,13 +147,13 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
   return (
     <div 
       ref={isArchived ? null : (drop as any)}
-      className={`bg-white rounded-xl p-5 shadow-md transition-all ${isOver && !isArchived ? 'ring-2 ring-blue-400 bg-blue-50' : ''}`}
+      className={`bg-white dark:bg-slate-800 rounded-xl p-5 shadow-md transition-all ${isOver && !isArchived ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-blue-50 dark:bg-slate-700' : ''}`}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-lg text-gray-700 flex items-center gap-2">
+        <h2 className="font-bold text-lg text-gray-700 dark:text-gray-200 flex items-center gap-2">
           <span className={`text-${colorClass}-500`}>{emoji}</span> {title}
         </h2>
-        <span className={`bg-${colorClass}-100 text-${colorClass}-800 text-xs font-semibold px-2.5 py-1 rounded-full`}>
+        <span className={`bg-${colorClass}-100 dark:bg-${colorClass}-900/30 text-${colorClass}-800 dark:text-${colorClass}-200 text-xs font-semibold px-2.5 py-1 rounded-full`}>
           {tasks.length}
         </span>
       </div>
@@ -249,17 +249,17 @@ const Project: React.FC = () => {
       <main className="p-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
               {projectData?.getProject?.title || 'Project'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
               {projectData?.getProject?.description || 'Manage your tasks'}
             </p>
           </div>
           {!isArchived && (
             <button 
               onClick={openCreateModal} 
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
             >
               <span className="text-xl">+</span> New Task
             </button>
@@ -267,12 +267,12 @@ const Project: React.FC = () => {
         </div>
 
         {isArchived && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-lg">
+          <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 mb-6 rounded-lg">
             <div className="flex items-center">
               <span className="text-2xl mr-3">📦</span>
               <div>
-                <p className="font-semibold text-yellow-800">This project is archived</p>
-                <p className="text-yellow-700 text-sm">Tasks are read-only and cannot be modified.</p>
+                <p className="font-semibold text-yellow-800 dark:text-yellow-200">This project is archived</p>
+                <p className="text-yellow-700 dark:text-yellow-300 text-sm">Tasks are read-only and cannot be modified.</p>
               </div>
             </div>
           </div>
@@ -282,7 +282,7 @@ const Project: React.FC = () => {
             </div>
           )}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-6 py-4 rounded-lg">
               {error.message}
             </div>
           )}
