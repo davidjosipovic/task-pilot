@@ -62,6 +62,7 @@ export interface UseConfirmReturn {
   isOpen: boolean;
   confirmDialog: ConfirmDialogProps | null;
   openConfirm: (config: Omit<ConfirmDialogProps, 'open' | 'onConfirm' | 'onCancel'>) => Promise<boolean>;
+  updateLoading: (isLoading: boolean) => void;
 }
 
 export const useConfirm = (): UseConfirmReturn => {
@@ -77,6 +78,10 @@ export const useConfirm = (): UseConfirmReturn => {
     });
   };
 
+  const updateLoading = (isLoading: boolean) => {
+    setConfirmDialog(prev => prev ? { ...prev, isLoading } : null);
+  };
+
   const handleConfirm = () => {
     resolveRef.current?.(true);
     setIsOpen(false);
@@ -90,6 +95,7 @@ export const useConfirm = (): UseConfirmReturn => {
   return {
     isOpen,
     confirmDialog: confirmDialog ? { ...confirmDialog, open: isOpen, onConfirm: handleConfirm, onCancel: handleCancel } : null,
-    openConfirm
+    openConfirm,
+    updateLoading
   };
 };

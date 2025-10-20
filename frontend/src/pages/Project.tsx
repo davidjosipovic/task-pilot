@@ -185,7 +185,7 @@ const Project: React.FC = () => {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('TODO');
   
-  const { confirmDialog, openConfirm } = useConfirm();
+  const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
   const isArchived = projectData?.getProject?.archived || false;
 
@@ -217,10 +217,17 @@ const Project: React.FC = () => {
     });
     
     if (confirmed) {
-      await deleteTask({ variables: { id: taskId } });
-      setEditingTask(null);
-      setShowModal(false);
-      refetch();
+      updateLoading(true);
+      try {
+        await deleteTask({ variables: { id: taskId } });
+        setEditingTask(null);
+        setShowModal(false);
+        refetch();
+      } catch (err) {
+        console.error('Failed to delete task:', err);
+      } finally {
+        updateLoading(false);
+      }
     }
   };
 
