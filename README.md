@@ -29,8 +29,10 @@ A full-stack project management application built with modern web technologies. 
 - 🎨 **Modern UI** - Beautiful, responsive interface with TailwindCSS
 - 🧪 **Fully Tested** - 35 comprehensive tests (100% passing)
 - 🐳 **Docker Ready** - Containerized with Docker Compose
-- ☁️ **Cloud Deployed** - Live on AWS (Amplify + Elastic Beanstalk)
+- ☁️ **Cloud Deployed** - Live on AWS (Amplify + Railway)
 - 🔄 **CI/CD Pipeline** - Automated testing and deployment with GitHub Actions
+- 📈 **Logging & Monitoring** - Structured logs, performance tracking, web dashboard
+- 📦 **Archive Feature** - Archive/restore projects with read-only mode
 
 ## 🛠️ Tech Stack
 
@@ -133,6 +135,19 @@ npm run test:coverage
 - Backend: Authentication, Projects, Tasks
 - Frontend: Components, Navigation, UI
 - See [TESTING.md](./TESTING.md) for details
+
+## 📚 Documentation
+
+Comprehensive guides for different aspects of the application:
+
+- **[LOGGING_MONITORING.md](./LOGGING_MONITORING.md)** - Logging configuration, log files, environment variables
+- **[LOGGING_TUTORIAL.md](./LOGGING_TUTORIAL.md)** - Real-world examples, debugging patterns, security monitoring
+- **[MONITORING_DASHBOARD.md](./MONITORING_DASHBOARD.md)** - Dashboard features, analytics, security patterns
+- **[LOGGING_IMPLEMENTATION.md](./LOGGING_IMPLEMENTATION.md)** - Technical implementation details and summary
+- **[AWS_DEPLOYMENT.md](./AWS_DEPLOYMENT.md)** - AWS deployment instructions
+- **[TESTING.md](./TESTING.md)** - Test setup and coverage
+- **[ARCHIVE_FEATURE.md](./ARCHIVE_FEATURE.md)** - Project archiving feature
+- **[CICD_SETUP.md](./CICD_SETUP.md)** - CI/CD pipeline configuration
 
 ## 📁 Project Structure
 
@@ -249,6 +264,40 @@ docker compose down -v
 - Protected GraphQL resolvers
 - Authorization checks for CRUD operations
 - CORS configuration
+
+## 📊 Logging & Monitoring
+
+TaskPilot includes comprehensive logging and monitoring:
+
+### Features
+- **Structured Logging** - JSON formatted logs for easy parsing
+- **Performance Tracking** - Request/response timing for all operations
+- **Error Tracking** - Automatic error capture and logging
+- **Action Audit Trail** - Track all user actions (create, delete, update, archive)
+- **Live Dashboard** - Real-time statistics and activity feed at `/monitoring`
+
+### Accessing Logs
+
+**Development:**
+```bash
+tail -f backend/logs/combined.log  # All logs
+tail -f backend/logs/error.log     # Errors only
+```
+
+**Production:**
+```
+Dashboard: https://task-pilot-backend-production.up.railway.app/monitoring
+```
+
+### Log Files
+- `combined.log` - All logs (info, warn, debug)
+- `error.log` - Error logs only
+- `application-YYYY-MM-DD.log` - Daily archives (production)
+
+For detailed logging guides, see:
+- [LOGGING_MONITORING.md](./LOGGING_MONITORING.md) - Technical reference
+- [LOGGING_TUTORIAL.md](./LOGGING_TUTORIAL.md) - Real-world examples
+- [MONITORING_DASHBOARD.md](./MONITORING_DASHBOARD.md) - Dashboard usage
 
 ## 🚢 Deployment
 
