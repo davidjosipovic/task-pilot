@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard';
 import Project from './pages/Project';
 import Archive from './pages/Archive';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const httpLink = new HttpLink({
@@ -56,21 +57,23 @@ const client = new ApolloClient({
 
 const App: React.FC = () => (
   <ApolloProvider client={client}>
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/project/:id" element={<Project />} />
-            <Route path="/archive" element={<Archive />} />
-          </Route>
-          <Route path="*" element={<Login />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/project/:id" element={<Project />} />
+              <Route path="/archive" element={<Archive />} />
+            </Route>
+            <Route path="*" element={<Login />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   </ApolloProvider>
 );
 

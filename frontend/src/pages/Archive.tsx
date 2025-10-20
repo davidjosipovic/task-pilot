@@ -99,12 +99,12 @@ const Archive: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 transition duration-200">
       <Navbar />
       <main className="p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Archived Projects</h1>
-          <p className="text-gray-600 mt-1">View and restore your archived projects</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Archived Projects</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">View and restore your archived projects</p>
         </div>
 
         {loading && (
@@ -114,16 +114,16 @@ const Archive: React.FC = () => {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-6 py-4 rounded-lg">
             {error.message}
           </div>
         )}
 
         {!loading && !error && data?.getArchivedProjects?.length === 0 && (
           <div className="text-center py-20">
-            <div className="text-gray-400 text-6xl mb-4">📦</div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No archived projects</h3>
-            <p className="text-gray-500">Archived projects will appear here</p>
+            <div className="text-gray-400 dark:text-gray-600 text-6xl mb-4">📦</div>
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">No archived projects</h3>
+            <p className="text-gray-500 dark:text-gray-500">Archived projects will appear here</p>
           </div>
         )}
 
@@ -131,23 +131,23 @@ const Archive: React.FC = () => {
           {data?.getArchivedProjects?.map((project) => (
             <div 
               key={project.id}
-              className="relative bg-white rounded-xl shadow-md p-6 border border-gray-200 opacity-80 hover:opacity-100 transition"
+              className="relative bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-slate-700 opacity-80 hover:opacity-100 transition"
             >
               <Link to={`/project/${project.id}`} className="block">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-bold text-xl text-gray-700">{project.title}</h3>
+                  <h3 className="font-bold text-xl text-gray-700 dark:text-white">{project.title}</h3>
                   <span className="text-2xl">📦</span>
                 </div>
-                <p className="text-gray-500 text-sm line-clamp-2 mb-3">
+                <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2 mb-3">
                   {project.description || 'No description'}
                 </p>
-                <div className="text-gray-400 text-xs font-medium mb-4">
+                <div className="text-gray-400 dark:text-gray-500 text-xs font-medium mb-4">
                   🔒 Read-only (Archived)
                 </div>
               </Link>
               <button
                 onClick={() => handleUnarchive(project.id)}
-                className="w-full bg-green-500 hover:bg-green-600 text-white rounded-lg px-4 py-2 text-sm font-semibold transition shadow-md"
+                className="w-full bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-lg px-4 py-2 text-sm font-semibold transition shadow-md"
               >
                 ↻ Restore Project
               </button>
