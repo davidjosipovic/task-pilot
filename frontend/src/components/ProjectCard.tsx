@@ -39,7 +39,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ id, title, description, archi
           View Project →
         </div>
       </Link>
-      <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Action buttons - visible on mobile, opacity on desktop hover */}
+      <div className="absolute bottom-4 right-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
         {onArchive && !archived && (
           <button
             onClick={handleArchive}
