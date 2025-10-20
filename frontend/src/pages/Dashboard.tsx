@@ -3,6 +3,8 @@ import { gql } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import ProjectCard from '../components/ProjectCard';
 import Navbar from '../components/Navbar';
+import { Notification, useNotification } from '../components/Notification';
+import { ConfirmDialog, useConfirm } from '../components/ConfirmDialog';
 
 const GET_PROJECTS = gql`
   query GetProjects {
@@ -90,6 +92,9 @@ const Dashboard: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  
+  const { notification, showNotification: _, dismissNotification } = useNotification();
+  const { confirmDialog } = useConfirm();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,6 +261,15 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         </main>
+        {notification && (
+          <Notification 
+            {...notification} 
+            onDismiss={dismissNotification}
+          />
+        )}
+        {confirmDialog && (
+          <ConfirmDialog {...confirmDialog} />
+        )}
     </div>
   );
 };
