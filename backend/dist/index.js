@@ -14,6 +14,7 @@ const projectTaskTypeDefs_1 = __importDefault(require("./schemas/projectTaskType
 const userResolver_1 = __importDefault(require("./resolvers/userResolver"));
 const projectTaskResolver_1 = __importDefault(require("./resolvers/projectTaskResolver"));
 const auth_1 = require("./middleware/auth");
+const httpLogging_1 = require("./middleware/httpLogging");
 const loggingPlugin_1 = require("./plugins/loggingPlugin");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -48,6 +49,7 @@ app.use((0, cors_1.default)({
 }));
 app.use(express_1.default.json());
 app.use(auth_1.authMiddleware);
+app.use(httpLogging_1.httpLoggingMiddleware);
 // Health check endpoints
 app.get('/', (req, res) => {
     res.status(200).json({

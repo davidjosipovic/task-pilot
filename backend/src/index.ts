@@ -10,6 +10,7 @@ import projectTaskTypeDefs from './schemas/projectTaskTypeDefs';
 import userResolver from './resolvers/userResolver';
 import projectTaskResolver from './resolvers/projectTaskResolver';
 import { authMiddleware } from './middleware/auth';
+import { httpLoggingMiddleware } from './middleware/httpLogging';
 import logger from './utils/logger';
 import { loggingPlugin } from './plugins/loggingPlugin';
 
@@ -48,6 +49,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(authMiddleware);
+app.use(httpLoggingMiddleware);
 
 // Health check endpoints
 app.get('/', (req, res) => {
