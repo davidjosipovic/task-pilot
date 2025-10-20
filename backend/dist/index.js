@@ -16,6 +16,7 @@ const projectTaskResolver_1 = __importDefault(require("./resolvers/projectTaskRe
 const auth_1 = require("./middleware/auth");
 const httpLogging_1 = require("./middleware/httpLogging");
 const loggingPlugin_1 = require("./plugins/loggingPlugin");
+const dashboardHandler_1 = require("./utils/dashboardHandler");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 // Allow multiple origins for CORS
@@ -55,9 +56,12 @@ app.get('/', (req, res) => {
     res.status(200).json({
         status: 'healthy',
         message: 'TaskPilot Backend API',
-        graphql: '/graphql'
+        graphql: '/graphql',
+        monitoring: '/monitoring'
     });
 });
+// Monitoring dashboard
+app.get('/monitoring', dashboardHandler_1.dashboardHandler);
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });

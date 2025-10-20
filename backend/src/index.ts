@@ -13,6 +13,7 @@ import { authMiddleware } from './middleware/auth';
 import { httpLoggingMiddleware } from './middleware/httpLogging';
 import logger from './utils/logger';
 import { loggingPlugin } from './plugins/loggingPlugin';
+import { dashboardHandler } from './utils/dashboardHandler';
 
 dotenv.config();
 
@@ -56,9 +57,13 @@ app.get('/', (req, res) => {
   res.status(200).json({ 
     status: 'healthy',
     message: 'TaskPilot Backend API',
-    graphql: '/graphql'
+    graphql: '/graphql',
+    monitoring: '/monitoring'
   });
 });
+
+// Monitoring dashboard
+app.get('/monitoring', dashboardHandler);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
