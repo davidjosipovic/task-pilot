@@ -94,7 +94,7 @@ const Dashboard: React.FC = () => {
   const [description, setDescription] = useState('');
   
   const { notification, showNotification: _, dismissNotification } = useNotification();
-  const { confirmDialog } = useConfirm();
+  const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +113,17 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const confirmed = await openConfirm({
+      title: 'Delete Project?',
+      message: 'This will also delete all tasks in this project. This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+    
+    if (!confirmed) return;
+    
+    updateLoading(true);
     try {
       await deleteProject({ 
         variables: { id },
@@ -135,11 +146,23 @@ const Dashboard: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to delete project:', err);
-      alert('Failed to delete project. Please try again.');
+    } finally {
+      updateLoading(false);
     }
   };
 
   const handleArchive = async (id: string) => {
+    const confirmed = await openConfirm({
+      title: 'Archive Project?',
+      message: 'You can restore it later from the Archive page.',
+      confirmText: 'Archive',
+      cancelText: 'Cancel',
+      isDangerous: false
+    });
+    
+    if (!confirmed) return;
+    
+    updateLoading(true);
     try {
       await archiveProject({ 
         variables: { id },
@@ -171,7 +194,8 @@ const Dashboard: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to archive project:', err);
-      alert('Failed to archive project. Please try again.');
+    } finally {
+      updateLoading(false);
     }
   };
 

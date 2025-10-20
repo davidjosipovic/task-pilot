@@ -14,15 +14,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ id, title, description, archi
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (confirm(`Are you sure you want to delete "${title}"? This will also delete all tasks in this project.`)) {
-      onDelete(id);
-    }
+    onDelete(id);
   };
 
   const handleArchive = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onArchive && confirm(`Archive "${title}"? You can restore it later from the Archive page.`)) {
+    if (onArchive) {
       onArchive(id);
     }
   };
