@@ -141,6 +141,14 @@ const projectTaskResolver = {
   },
   Task: {
     assignedUser: async (parent: any) => parent.assignedUser ? User.findById(parent.assignedUser) : null,
+    dueDate: (parent: any) => {
+      if (!parent.dueDate) return null;
+      // Ensure we return ISO string format
+      if (parent.dueDate instanceof Date) {
+        return parent.dueDate.toISOString();
+      }
+      return String(parent.dueDate);
+    }
   },
 };
 

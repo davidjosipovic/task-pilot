@@ -22,23 +22,30 @@ const priorityIcons: Record<string, string> = {
 };
 
 const getDaysUntilDue = (dueDate: string): { days: number; isExpired: boolean; text: string } => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
-  
-  const diff = due.getTime() - today.getTime();
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-  
-  if (days < 0) {
-    return { days: Math.abs(days), isExpired: true, text: `Expired ${Math.abs(days)}d ago` };
-  } else if (days === 0) {
-    return { days: 0, isExpired: true, text: 'Due today' };
-  } else if (days === 1) {
-    return { days: 1, isExpired: false, text: 'Due tomorrow' };
-  } else {
-    return { days, isExpired: days <= 3, text: `${days} days left` };
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Parse ISO string properly - split by 'T' to get just the date part
+    const dateString = dueDate.split('T')[0]; // Converts "2025-10-25T00:00:00.000Z" to "2025-10-25"
+    const [year, month, day] = dateString.split('-').map(Number);
+    const due = new Date(year, month - 1, day); // Month is 0-indexed in Date constructor
+    
+    const diff = due.getTime() - today.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    
+    if (days < 0) {
+      return { days: Math.abs(days), isExpired: true, text: `Expired ${Math.abs(days)}d ago` };
+    } else if (days === 0) {
+      return { days: 0, isExpired: true, text: 'Due today' };
+    } else if (days === 1) {
+      return { days: 1, isExpired: false, text: 'Due tomorrow' };
+    } else {
+      return { days, isExpired: days <= 3, text: `${days} days left` };
+    }
+  } catch (error) {
+    console.error('Error parsing due date:', dueDate, error);
+    return { days: 0, isExpired: false, text: 'Invalid date' };
   }
 };
 
