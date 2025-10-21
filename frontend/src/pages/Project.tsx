@@ -282,10 +282,22 @@ const Project: React.FC = () => {
     refetch();
   };
 
+  const sortByDeadline = (taskList: Task[]) => {
+    return [...taskList].sort((a, b) => {
+      // Tasks without due date go to the end
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      
+      // Sort by due date ascending (earliest first)
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    });
+  };
+
   const tasks = data?.getTasksByProject || [];
-  const todoTasks = tasks.filter((t: Task) => t.status === 'TODO');
-  const doingTasks = tasks.filter((t: Task) => t.status === 'DOING');
-  const doneTasks = tasks.filter((t: Task) => t.status === 'DONE');
+  const todoTasks = sortByDeadline(tasks.filter((t: Task) => t.status === 'TODO'));
+  const doingTasks = sortByDeadline(tasks.filter((t: Task) => t.status === 'DOING'));
+  const doneTasks = sortByDeadline(tasks.filter((t: Task) => t.status === 'DONE'));
 
   return (
     <DndProvider backend={HTML5Backend}>
