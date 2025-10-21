@@ -89,6 +89,12 @@ const CREATE_TAG = gql`
   }
 `;
 
+const DELETE_TAG = gql`
+  mutation DeleteTag($id: ID!) {
+    deleteTag(id: $id)
+  }
+`;
+
 interface Task {
   id: string;
   title: string;
@@ -222,6 +228,7 @@ const Project: React.FC = () => {
   const [updateTask] = useMutation(UPDATE_TASK);
   const [deleteTask] = useMutation(DELETE_TASK);
   const [createTag] = useMutation(CREATE_TAG);
+  const [deleteTag] = useMutation(DELETE_TAG);
 
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -233,6 +240,7 @@ const Project: React.FC = () => {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState('');
   const [newTagColor, setNewTagColor] = useState('#3B82F6');
+  const [showTagsSection, setShowTagsSection] = useState(false);
   
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
@@ -241,7 +249,7 @@ const Project: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createTask({ variables: { projectId: id, title, description, priority, dueDate: dueDate || undefined, tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined } });
+    await createTask({ variables: { projectId: id, title, description, priority, dueDate: dueDate || undefined, tagIds: selectedTagIds } });
     setTitle('');
     setDescription('');
     setPriority('MEDIUM');
@@ -262,7 +270,7 @@ const Project: React.FC = () => {
         status, 
         priority, 
         dueDate: dueDate || null,
-        tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined
+        tagIds: selectedTagIds
       } 
     });
     setEditingTask(null);
@@ -297,10 +305,45 @@ const Project: React.FC = () => {
   const handleCreateTag = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTagName.trim()) return;
+    
+    // Validate color - prevent white or very light colors
+    const hex = newTagColor.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    
+    if (brightness > 200) {
+      alert('Please choose a darker color for better text visibility');
+      return;
+    }
+    
     await createTag({ variables: { projectId: id, name: newTagName, color: newTagColor } });
     setNewTagName('');
     setNewTagColor('#3B82F6');
     refetchTags();
+  };
+
+  const handleDeleteTag = async (tagId: string, tagName: string) => {
+    const confirmed = await openConfirm({
+      title: 'Delete Tag?',
+      message: `Are you sure you want to delete the tag "${tagName}"? Tasks with this tag will keep their other tags.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      isDangerous: true
+    });
+
+    if (confirmed) {
+      updateLoading(true);
+      try {
+        await deleteTag({ variables: { id: tagId } });
+        refetchTags();
+      } catch (err) {
+        console.error('Failed to delete tag:', err);
+      } finally {
+        updateLoading(false);
+      }
+    }
   };
 
   const openCreateModal = () => {
@@ -311,6 +354,7 @@ const Project: React.FC = () => {
     setPriority('MEDIUM');
     setDueDate('');
     setSelectedTagIds([]);
+    setShowTagsSection(false);
     setShowModal(true);
   };
 
@@ -322,6 +366,7 @@ const Project: React.FC = () => {
     setPriority(task.priority);
     setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
     setSelectedTagIds(task.tags.map(tag => tag.id));
+    setShowTagsSection(false);
     setShowModal(true);
   };
 
@@ -429,10 +474,12 @@ const Project: React.FC = () => {
               isArchived={isArchived}
             />
           </div>          <TaskModal open={showModal} onClose={() => setShowModal(false)}>
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
-              {editingTask ? 'Edit Task' : 'Create New Task'}
-            </h2>
-            <form onSubmit={editingTask ? handleUpdate : handleCreate} className="space-y-5">
+            <div className="flex flex-col h-full">
+              <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex-shrink-0">
+                {editingTask ? 'Edit Task' : 'Create New Task'}
+              </h2>
+              <form onSubmit={editingTask ? handleUpdate : handleCreate} className="flex flex-col flex-1 min-h-0">
+                <div className="space-y-5 flex-1 overflow-y-auto pr-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task Title</label>
                 <input
@@ -475,63 +522,136 @@ const Project: React.FC = () => {
                   onChange={e => setDueDate(e.target.value)}
                 />
               </div>
+              
+              {/* Tags Section - Collapsible */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Tags</label>
-                <div className="space-y-3">
-                  {/* Tag selector */}
-                  <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-slate-600 rounded-lg p-3 bg-gray-50 dark:bg-slate-700/50">
-                    {tags.length === 0 ? (
-                      <p className="text-gray-500 dark:text-gray-400 text-sm">No tags available</p>
-                    ) : (
-                      tags.map(tag => (
-                        <label key={tag.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 p-2 rounded transition">
-                          <input
-                            type="checkbox"
-                            checked={selectedTagIds.includes(tag.id)}
-                            onChange={e => {
-                              if (e.target.checked) {
-                                setSelectedTagIds([...selectedTagIds, tag.id]);
-                              } else {
-                                setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
-                              }
-                            }}
-                            className="rounded"
-                          />
-                          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }}></span>
-                          <span className="text-gray-900 dark:text-white text-sm">{tag.name}</span>
-                        </label>
-                      ))
+                <button
+                  type="button"
+                  onClick={() => setShowTagsSection(!showTagsSection)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-700/30 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tags</span>
+                    {selectedTagIds.length > 0 && (
+                      <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                        {selectedTagIds.length}
+                      </span>
                     )}
                   </div>
-                  
-                  {/* Create new tag form */}
-                  <div className="space-y-2 p-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-blue-50 dark:bg-slate-700/30">
-                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Create new tag</p>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Tag name"
-                        value={newTagName}
-                        onChange={e => setNewTagName(e.target.value)}
-                        className="flex-1 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent transition"
-                      />
-                      <input
-                        type="color"
-                        value={newTagColor}
-                        onChange={e => setNewTagColor(e.target.value)}
-                        className="w-10 h-9 rounded cursor-pointer"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleCreateTag}
-                        className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition"
-                      >
-                        Add
-                      </button>
+                  <span className={`text-gray-500 dark:text-gray-400 transition ${showTagsSection ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </button>
+
+                {showTagsSection && (
+                  <div className="mt-3 space-y-4 p-4 rounded-lg bg-gray-50 dark:bg-slate-700/30">
+                    {/* Selected tags display */}
+                    {selectedTagIds.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Selected Tags</p>
+                        <div className="flex flex-wrap gap-2">
+                          {tags.filter(tag => selectedTagIds.includes(tag.id)).map(tag => (
+                            <button
+                              key={tag.id}
+                              type="button"
+                              onClick={() => setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id))}
+                              className="px-3 py-1 rounded-full text-sm font-medium text-white flex items-center gap-2 hover:opacity-80 transition"
+                              style={{ backgroundColor: tag.color }}
+                            >
+                              {tag.name}
+                              <span className="text-lg leading-none">×</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Available tags */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Available Tags</p>
+                      <div className="max-h-40 overflow-y-auto">
+                        {tags.length === 0 ? (
+                          <p className="text-gray-500 dark:text-gray-400 text-sm">No tags available yet</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {tags.map(tag => (
+                              <div key={tag.id} className="flex items-center justify-between p-1.5 rounded-lg bg-gray-50 dark:bg-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (selectedTagIds.includes(tag.id)) {
+                                      setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
+                                    } else {
+                                      setSelectedTagIds([...selectedTagIds, tag.id]);
+                                    }
+                                  }}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium transition text-left ${
+                                    selectedTagIds.includes(tag.id)
+                                      ? 'ring-2 ring-offset-1 ring-offset-white dark:ring-offset-slate-700 text-white'
+                                      : 'bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200'
+                                  }`}
+                                  style={selectedTagIds.includes(tag.id) ? { backgroundColor: tag.color } : {}}
+                                >
+                                  {tag.name}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteTag(tag.id, tag.name)}
+                                  className="ml-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-1 py-0.5 rounded transition text-sm"
+                                  title="Delete tag"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Create new tag form */}
+                    <div className="pt-2 border-t border-gray-200 dark:border-slate-700">
+                      <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Create New Tag</p>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Tag name"
+                          value={newTagName}
+                          onChange={e => setNewTagName(e.target.value)}
+                          className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-3 py-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        />
+                        <div>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">Select Color:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {['#EF4444', '#F97316', '#EAB308', '#22C55E', '#06B6D4', '#3B82F6', '#8B5CF6', '#EC4899', '#64748B', '#6B7280'].map(color => (
+                              <button
+                                key={color}
+                                type="button"
+                                onClick={() => setNewTagColor(color)}
+                                className={`w-8 h-8 rounded-lg border-2 transition ${
+                                  newTagColor === color
+                                    ? 'border-gray-800 dark:border-gray-200 ring-2 ring-offset-2'
+                                    : 'border-gray-300 dark:border-slate-600'
+                                }`}
+                                style={{ backgroundColor: color }}
+                                title={color}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCreateTag}
+                          className="w-full bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition"
+                        >
+                          Create Tag
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
+
               {editingTask && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
@@ -546,7 +666,8 @@ const Project: React.FC = () => {
                   </select>
                 </div>
               )}
-              <div className="flex gap-3 pt-2">
+              </div>
+              <div className="flex gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-slate-700 flex-shrink-0">
                 <button 
                   type="submit" 
                   className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition shadow-md"
@@ -571,6 +692,7 @@ const Project: React.FC = () => {
                 </button>
               </div>
             </form>
+            </div>
           </TaskModal>
           {confirmDialog && (
             <ConfirmDialog {...confirmDialog} />
