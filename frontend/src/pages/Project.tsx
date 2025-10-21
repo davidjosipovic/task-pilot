@@ -79,6 +79,16 @@ const DELETE_TASK = gql`
   }
 `;
 
+const CREATE_TAG = gql`
+  mutation CreateTag($projectId: ID!, $name: String!, $color: String) {
+    createTag(projectId: $projectId, name: $name, color: $color) {
+      id
+      name
+      color
+    }
+  }
+`;
+
 interface Task {
   id: string;
   title: string;
@@ -207,10 +217,11 @@ const Project: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: projectData } = useQuery<GetProjectData>(GET_PROJECT, { variables: { id } });
   const { data, loading, error, refetch } = useQuery<GetTasksData>(GET_TASKS, { variables: { projectId: id } });
-  const { data: tagsData } = useQuery<GetTagsData>(GET_TAGS, { variables: { projectId: id } });
+  const { data: tagsData, refetch: refetchTags } = useQuery<GetTagsData>(GET_TAGS, { variables: { projectId: id } });
   const [createTask] = useMutation(CREATE_TASK);
   const [updateTask] = useMutation(UPDATE_TASK);
   const [deleteTask] = useMutation(DELETE_TASK);
+  const [createTag] = useMutation(CREATE_TAG);
 
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -220,6 +231,8 @@ const Project: React.FC = () => {
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#3B82F6');
   
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
@@ -279,6 +292,15 @@ const Project: React.FC = () => {
         updateLoading(false);
       }
     }
+  };
+
+  const handleCreateTag = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTagName.trim()) return;
+    await createTag({ variables: { projectId: id, name: newTagName, color: newTagColor } });
+    setNewTagName('');
+    setNewTagColor('#3B82F6');
+    refetchTags();
   };
 
   const openCreateModal = () => {
@@ -455,29 +477,59 @@ const Project: React.FC = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Tags</label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-slate-600 rounded-lg p-3 bg-gray-50 dark:bg-slate-700/50">
-                  {tags.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">No tags available</p>
-                  ) : (
-                    tags.map(tag => (
-                      <label key={tag.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 p-2 rounded transition">
-                        <input
-                          type="checkbox"
-                          checked={selectedTagIds.includes(tag.id)}
-                          onChange={e => {
-                            if (e.target.checked) {
-                              setSelectedTagIds([...selectedTagIds, tag.id]);
-                            } else {
-                              setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
-                            }
-                          }}
-                          className="rounded"
-                        />
-                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }}></span>
-                        <span className="text-gray-900 dark:text-white text-sm">{tag.name}</span>
-                      </label>
-                    ))
-                  )}
+                <div className="space-y-3">
+                  {/* Tag selector */}
+                  <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-slate-600 rounded-lg p-3 bg-gray-50 dark:bg-slate-700/50">
+                    {tags.length === 0 ? (
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">No tags available</p>
+                    ) : (
+                      tags.map(tag => (
+                        <label key={tag.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 p-2 rounded transition">
+                          <input
+                            type="checkbox"
+                            checked={selectedTagIds.includes(tag.id)}
+                            onChange={e => {
+                              if (e.target.checked) {
+                                setSelectedTagIds([...selectedTagIds, tag.id]);
+                              } else {
+                                setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }}></span>
+                          <span className="text-gray-900 dark:text-white text-sm">{tag.name}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  
+                  {/* Create new tag form */}
+                  <div className="space-y-2 p-3 border border-gray-300 dark:border-slate-600 rounded-lg bg-blue-50 dark:bg-slate-700/30">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Create new tag</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Tag name"
+                        value={newTagName}
+                        onChange={e => setNewTagName(e.target.value)}
+                        className="flex-1 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white px-2 py-1 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent transition"
+                      />
+                      <input
+                        type="color"
+                        value={newTagColor}
+                        onChange={e => setNewTagColor(e.target.value)}
+                        className="w-10 h-9 rounded cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCreateTag}
+                        className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               {editingTask && (

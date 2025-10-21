@@ -38,7 +38,8 @@ const projectTaskResolver = {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
-      return Tag.find({ projectId });
+      const projectObjectId = new mongoose.Types.ObjectId(projectId);
+      return Tag.find({ projectId: projectObjectId });
     },
   },
   Mutation: {
