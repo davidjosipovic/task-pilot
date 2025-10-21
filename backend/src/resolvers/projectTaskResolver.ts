@@ -99,7 +99,7 @@ const projectTaskResolver = {
       logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM', dueDate });
       return task;
     },
-    updateTask: async (_: any, { id, title, description, status, priority, dueDate, assignedUser }: { id: string; title?: string; description?: string; status?: string; priority?: string; dueDate?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
+    updateTask: async (_: any, { id, title, description, status, priority, dueDate, assignedUser }: { id: string; title?: string; description?: string; status?: string; priority?: string; dueDate?: string | null; assignedUser?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const task = await Task.findById(id);
       if (!task) throw new Error('Task not found');

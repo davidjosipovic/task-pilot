@@ -213,7 +213,16 @@ const Project: React.FC = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTask) return;
-    await updateTask({ variables: { id: editingTask.id, title, description, status, priority, dueDate: dueDate || undefined } });
+    await updateTask({ 
+      variables: { 
+        id: editingTask.id, 
+        title, 
+        description, 
+        status, 
+        priority, 
+        dueDate: dueDate || null  // Send null instead of undefined to clear the date
+      } 
+    });
     setEditingTask(null);
     setShowModal(false);
     refetch();
