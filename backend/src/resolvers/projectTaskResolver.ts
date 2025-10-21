@@ -77,7 +77,7 @@ const projectTaskResolver = {
       logger.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
-    createTask: async (_: any, { projectId, title, description, assignedUser }: { projectId: string; title: string; description?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
+    createTask: async (_: any, { projectId, title, description, assignedUser, priority }: { projectId: string; title: string; description?: string; assignedUser?: string; priority?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
@@ -90,13 +90,14 @@ const projectTaskResolver = {
         title,
         description,
         status: 'TODO',
+        priority: priority || 'MEDIUM',
         assignedUser: assignedUserId,
         projectId,
       });
-      logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title });
+      logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM' });
       return task;
     },
-    updateTask: async (_: any, { id, title, description, status, assignedUser }: { id: string; title?: string; description?: string; status?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
+    updateTask: async (_: any, { id, title, description, status, priority, assignedUser }: { id: string; title?: string; description?: string; status?: string; priority?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const task = await Task.findById(id);
       if (!task) throw new Error('Task not found');
@@ -109,9 +110,10 @@ const projectTaskResolver = {
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (status !== undefined) task.status = status as TaskStatus;
+      if (priority !== undefined) task.priority = priority as any;
       if (assignedUser !== undefined) task.assignedUser = new mongoose.Types.ObjectId(assignedUser);
       await task.save();
-      logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status });
+      logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority });
       return task;
     },
     deleteTask: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {

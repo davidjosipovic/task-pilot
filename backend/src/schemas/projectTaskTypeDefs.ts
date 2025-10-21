@@ -16,6 +16,7 @@ const projectTaskTypeDefs = gql`
     title: String!
     description: String
     status: String!
+    priority: String!
     assignedUser: User
     projectId: ID!
     createdAt: String
@@ -34,8 +35,8 @@ const projectTaskTypeDefs = gql`
     deleteProject(id: ID!): Boolean!
     archiveProject(id: ID!): Project!
     unarchiveProject(id: ID!): Project!
-    createTask(projectId: ID!, title: String!, description: String, assignedUser: ID): Task!
-    updateTask(id: ID!, title: String, description: String, status: String, assignedUser: ID): Task!
+    createTask(projectId: ID!, title: String!, description: String, assignedUser: ID, priority: String): Task!
+    updateTask(id: ID!, title: String, description: String, status: String, priority: String, assignedUser: ID): Task!
     deleteTask(id: ID!): Boolean!
   }
 `;

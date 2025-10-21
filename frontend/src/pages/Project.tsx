@@ -27,29 +27,32 @@ const GET_TASKS = gql`
       title
       description
       status
+      priority
       assignedUser { id name }
     }
   }
 `;
 
 const CREATE_TASK = gql`
-  mutation CreateTask($projectId: ID!, $title: String!, $description: String) {
-    createTask(projectId: $projectId, title: $title, description: $description) {
+  mutation CreateTask($projectId: ID!, $title: String!, $description: String, $priority: String) {
+    createTask(projectId: $projectId, title: $title, description: $description, priority: $priority) {
       id
       title
       description
       status
+      priority
     }
   }
 `;
 
 const UPDATE_TASK = gql`
-  mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String) {
-    updateTask(id: $id, title: $title, description: $description, status: $status) {
+  mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String, $priority: String) {
+    updateTask(id: $id, title: $title, description: $description, status: $status, priority: $priority) {
       id
       title
       description
       status
+      priority
     }
   }
 `;
@@ -65,6 +68,7 @@ interface Task {
   title: string;
   description?: string;
   status: string;
+  priority: string;
   assignedUser?: { id: string; name: string };
 }
 
@@ -106,7 +110,7 @@ const DraggableTask: React.FC<DraggableTaskProps> = ({ task, onEdit, isArchived 
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className={isArchived ? 'cursor-default' : 'cursor-move'}
     >
-      <TaskCard title={task.title} status={task.status} assignedUser={task.assignedUser?.name} />
+      <TaskCard title={task.title} status={task.status} priority={task.priority} assignedUser={task.assignedUser?.name} />
     </div>
   );
 };
@@ -184,6 +188,7 @@ const Project: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('TODO');
+  const [priority, setPriority] = useState('MEDIUM');
   
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
@@ -191,9 +196,10 @@ const Project: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createTask({ variables: { projectId: id, title, description } });
+    await createTask({ variables: { projectId: id, title, description, priority } });
     setTitle('');
     setDescription('');
+    setPriority('MEDIUM');
     setShowModal(false);
     refetch();
   };
@@ -201,7 +207,7 @@ const Project: React.FC = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTask) return;
-    await updateTask({ variables: { id: editingTask.id, title, description, status } });
+    await updateTask({ variables: { id: editingTask.id, title, description, status, priority } });
     setEditingTask(null);
     setShowModal(false);
     refetch();
@@ -236,6 +242,7 @@ const Project: React.FC = () => {
     setTitle('');
     setDescription('');
     setStatus('TODO');
+    setPriority('MEDIUM');
     setShowModal(true);
   };
 
@@ -244,6 +251,7 @@ const Project: React.FC = () => {
     setTitle(task.title);
     setDescription(task.description || '');
     setStatus(task.status);
+    setPriority(task.priority);
     setShowModal(true);
   };
 
@@ -362,6 +370,19 @@ const Project: React.FC = () => {
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
+                <select 
+                  className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" 
+                  value={priority} 
+                  onChange={e => setPriority(e.target.value)}
+                >
+                  <option value="LOW">🟢 Low</option>
+                  <option value="MEDIUM">🟡 Medium</option>
+                  <option value="HIGH">🟠 High</option>
+                  <option value="CRITICAL">🔴 Critical</option>
+                </select>
               </div>
               {editingTask && (
                 <div>

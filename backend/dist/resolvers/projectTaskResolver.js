@@ -94,7 +94,7 @@ const projectTaskResolver = {
             logger_1.default.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
             return project;
         },
-        createTask: async (_, { projectId, title, description, assignedUser }, context) => {
+        createTask: async (_, { projectId, title, description, assignedUser, priority }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(projectId);
@@ -111,13 +111,14 @@ const projectTaskResolver = {
                 title,
                 description,
                 status: 'TODO',
+                priority: priority || 'MEDIUM',
                 assignedUser: assignedUserId,
                 projectId,
             });
-            logger_1.default.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title });
+            logger_1.default.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM' });
             return task;
         },
-        updateTask: async (_, { id, title, description, status, assignedUser }, context) => {
+        updateTask: async (_, { id, title, description, status, priority, assignedUser }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const task = await Task_1.default.findById(id);
@@ -138,10 +139,12 @@ const projectTaskResolver = {
                 task.description = description;
             if (status !== undefined)
                 task.status = status;
+            if (priority !== undefined)
+                task.priority = priority;
             if (assignedUser !== undefined)
                 task.assignedUser = new mongoose_1.default.Types.ObjectId(assignedUser);
             await task.save();
-            logger_1.default.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status });
+            logger_1.default.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority });
             return task;
         },
         deleteTask: async (_, { id }, context) => {
