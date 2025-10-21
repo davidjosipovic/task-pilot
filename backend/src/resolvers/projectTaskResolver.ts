@@ -77,7 +77,7 @@ const projectTaskResolver = {
       logger.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
-    createTask: async (_: any, { projectId, title, description, assignedUser, priority }: { projectId: string; title: string; description?: string; assignedUser?: string; priority?: string }, context: { req: AuthRequest }) => {
+    createTask: async (_: any, { projectId, title, description, assignedUser, priority, dueDate }: { projectId: string; title: string; description?: string; assignedUser?: string; priority?: string; dueDate?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
@@ -86,18 +86,20 @@ const projectTaskResolver = {
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
       if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
       const assignedUserId = assignedUser ? new mongoose.Types.ObjectId(assignedUser) : undefined;
+      const dueDateObj = dueDate ? new Date(dueDate) : undefined;
       const task = await Task.create({
         title,
         description,
         status: 'TODO',
         priority: priority || 'MEDIUM',
+        dueDate: dueDateObj,
         assignedUser: assignedUserId,
         projectId,
       });
-      logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM' });
+      logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM', dueDate });
       return task;
     },
-    updateTask: async (_: any, { id, title, description, status, priority, assignedUser }: { id: string; title?: string; description?: string; status?: string; priority?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
+    updateTask: async (_: any, { id, title, description, status, priority, dueDate, assignedUser }: { id: string; title?: string; description?: string; status?: string; priority?: string; dueDate?: string; assignedUser?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const task = await Task.findById(id);
       if (!task) throw new Error('Task not found');
@@ -111,9 +113,10 @@ const projectTaskResolver = {
       if (description !== undefined) task.description = description;
       if (status !== undefined) task.status = status as TaskStatus;
       if (priority !== undefined) task.priority = priority as any;
+      if (dueDate !== undefined) task.dueDate = dueDate ? new Date(dueDate) : undefined;
       if (assignedUser !== undefined) task.assignedUser = new mongoose.Types.ObjectId(assignedUser);
       await task.save();
-      logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority });
+      logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority, newDueDate: dueDate });
       return task;
     },
     deleteTask: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {

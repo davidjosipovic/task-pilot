@@ -8,6 +8,7 @@ export interface ITask extends Document {
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
+  dueDate?: Date;
   assignedUser: Types.ObjectId;
   projectId: Types.ObjectId;
 }
@@ -17,6 +18,7 @@ const TaskSchema = new Schema<ITask>({
   description: { type: String },
   status: { type: String, enum: ['TODO', 'DOING', 'DONE'], default: 'TODO' },
   priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'MEDIUM' },
+  dueDate: { type: Date },
   assignedUser: { type: Schema.Types.ObjectId, ref: 'User' },
   projectId: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
 }, { timestamps: true });

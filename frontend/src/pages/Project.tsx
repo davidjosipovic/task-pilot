@@ -28,31 +28,34 @@ const GET_TASKS = gql`
       description
       status
       priority
+      dueDate
       assignedUser { id name }
     }
   }
 `;
 
 const CREATE_TASK = gql`
-  mutation CreateTask($projectId: ID!, $title: String!, $description: String, $priority: String) {
-    createTask(projectId: $projectId, title: $title, description: $description, priority: $priority) {
+  mutation CreateTask($projectId: ID!, $title: String!, $description: String, $priority: String, $dueDate: String) {
+    createTask(projectId: $projectId, title: $title, description: $description, priority: $priority, dueDate: $dueDate) {
       id
       title
       description
       status
       priority
+      dueDate
     }
   }
 `;
 
 const UPDATE_TASK = gql`
-  mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String, $priority: String) {
-    updateTask(id: $id, title: $title, description: $description, status: $status, priority: $priority) {
+  mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String, $priority: String, $dueDate: String) {
+    updateTask(id: $id, title: $title, description: $description, status: $status, priority: $priority, dueDate: $dueDate) {
       id
       title
       description
       status
       priority
+      dueDate
     }
   }
 `;
@@ -69,6 +72,7 @@ interface Task {
   description?: string;
   status: string;
   priority: string;
+  dueDate?: string;
   assignedUser?: { id: string; name: string };
 }
 
@@ -110,7 +114,7 @@ const DraggableTask: React.FC<DraggableTaskProps> = ({ task, onEdit, isArchived 
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className={isArchived ? 'cursor-default' : 'cursor-move'}
     >
-      <TaskCard title={task.title} status={task.status} priority={task.priority} assignedUser={task.assignedUser?.name} />
+      <TaskCard title={task.title} status={task.status} priority={task.priority} dueDate={task.dueDate} assignedUser={task.assignedUser?.name} />
     </div>
   );
 };
@@ -189,6 +193,7 @@ const Project: React.FC = () => {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('TODO');
   const [priority, setPriority] = useState('MEDIUM');
+  const [dueDate, setDueDate] = useState('');
   
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
@@ -196,10 +201,11 @@ const Project: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createTask({ variables: { projectId: id, title, description, priority } });
+    await createTask({ variables: { projectId: id, title, description, priority, dueDate: dueDate || undefined } });
     setTitle('');
     setDescription('');
     setPriority('MEDIUM');
+    setDueDate('');
     setShowModal(false);
     refetch();
   };
@@ -207,7 +213,7 @@ const Project: React.FC = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTask) return;
-    await updateTask({ variables: { id: editingTask.id, title, description, status, priority } });
+    await updateTask({ variables: { id: editingTask.id, title, description, status, priority, dueDate: dueDate || undefined } });
     setEditingTask(null);
     setShowModal(false);
     refetch();
@@ -243,6 +249,7 @@ const Project: React.FC = () => {
     setDescription('');
     setStatus('TODO');
     setPriority('MEDIUM');
+    setDueDate('');
     setShowModal(true);
   };
 
@@ -252,6 +259,7 @@ const Project: React.FC = () => {
     setDescription(task.description || '');
     setStatus(task.status);
     setPriority(task.priority);
+    setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
     setShowModal(true);
   };
 
@@ -383,6 +391,15 @@ const Project: React.FC = () => {
                   <option value="HIGH">🟠 High</option>
                   <option value="CRITICAL">🔴 Critical</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Due Date</label>
+                <input
+                  type="date"
+                  className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  value={dueDate}
+                  onChange={e => setDueDate(e.target.value)}
+                />
               </div>
               {editingTask && (
                 <div>
