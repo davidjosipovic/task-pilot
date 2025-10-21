@@ -29,33 +29,46 @@ const GET_TASKS = gql`
       status
       priority
       dueDate
+      tags { id name color }
       assignedUser { id name }
     }
   }
 `;
 
+const GET_TAGS = gql`
+  query GetTagsByProject($projectId: ID!) {
+    getTagsByProject(projectId: $projectId) {
+      id
+      name
+      color
+    }
+  }
+`;
+
 const CREATE_TASK = gql`
-  mutation CreateTask($projectId: ID!, $title: String!, $description: String, $priority: String, $dueDate: String) {
-    createTask(projectId: $projectId, title: $title, description: $description, priority: $priority, dueDate: $dueDate) {
+  mutation CreateTask($projectId: ID!, $title: String!, $description: String, $priority: String, $dueDate: String, $tagIds: [ID!]) {
+    createTask(projectId: $projectId, title: $title, description: $description, priority: $priority, dueDate: $dueDate, tagIds: $tagIds) {
       id
       title
       description
       status
       priority
       dueDate
+      tags { id name color }
     }
   }
 `;
 
 const UPDATE_TASK = gql`
-  mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String, $priority: String, $dueDate: String) {
-    updateTask(id: $id, title: $title, description: $description, status: $status, priority: $priority, dueDate: $dueDate) {
+  mutation UpdateTask($id: ID!, $title: String, $description: String, $status: String, $priority: String, $dueDate: String, $tagIds: [ID!]) {
+    updateTask(id: $id, title: $title, description: $description, status: $status, priority: $priority, dueDate: $dueDate, tagIds: $tagIds) {
       id
       title
       description
       status
       priority
       dueDate
+      tags { id name color }
     }
   }
 `;
@@ -73,7 +86,14 @@ interface Task {
   status: string;
   priority: string;
   dueDate?: string;
+  tags: { id: string; name: string; color: string }[];
   assignedUser?: { id: string; name: string };
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }
 
 interface ProjectData {
@@ -85,6 +105,10 @@ interface ProjectData {
 
 interface GetTasksData {
   getTasksByProject: Task[];
+}
+
+interface GetTagsData {
+  getTagsByProject: Tag[];
 }
 
 interface GetProjectData {
@@ -114,7 +138,7 @@ const DraggableTask: React.FC<DraggableTaskProps> = ({ task, onEdit, isArchived 
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className={isArchived ? 'cursor-default' : 'cursor-move'}
     >
-      <TaskCard title={task.title} status={task.status} priority={task.priority} dueDate={task.dueDate} assignedUser={task.assignedUser?.name} />
+      <TaskCard title={task.title} status={task.status} priority={task.priority} dueDate={task.dueDate} tags={task.tags} assignedUser={task.assignedUser?.name} />
     </div>
   );
 };
@@ -183,6 +207,7 @@ const Project: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: projectData } = useQuery<GetProjectData>(GET_PROJECT, { variables: { id } });
   const { data, loading, error, refetch } = useQuery<GetTasksData>(GET_TASKS, { variables: { projectId: id } });
+  const { data: tagsData } = useQuery<GetTagsData>(GET_TAGS, { variables: { projectId: id } });
   const [createTask] = useMutation(CREATE_TASK);
   const [updateTask] = useMutation(UPDATE_TASK);
   const [deleteTask] = useMutation(DELETE_TASK);
@@ -194,18 +219,21 @@ const Project: React.FC = () => {
   const [status, setStatus] = useState('TODO');
   const [priority, setPriority] = useState('MEDIUM');
   const [dueDate, setDueDate] = useState('');
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
   const isArchived = projectData?.getProject?.archived || false;
+  const tags = tagsData?.getTagsByProject || [];
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createTask({ variables: { projectId: id, title, description, priority, dueDate: dueDate || undefined } });
+    await createTask({ variables: { projectId: id, title, description, priority, dueDate: dueDate || undefined, tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined } });
     setTitle('');
     setDescription('');
     setPriority('MEDIUM');
     setDueDate('');
+    setSelectedTagIds([]);
     setShowModal(false);
     refetch();
   };
@@ -220,7 +248,8 @@ const Project: React.FC = () => {
         description, 
         status, 
         priority, 
-        dueDate: dueDate || null  // Send null instead of undefined to clear the date
+        dueDate: dueDate || null,
+        tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined
       } 
     });
     setEditingTask(null);
@@ -259,6 +288,7 @@ const Project: React.FC = () => {
     setStatus('TODO');
     setPriority('MEDIUM');
     setDueDate('');
+    setSelectedTagIds([]);
     setShowModal(true);
   };
 
@@ -269,6 +299,7 @@ const Project: React.FC = () => {
     setStatus(task.status);
     setPriority(task.priority);
     setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
+    setSelectedTagIds(task.tags.map(tag => tag.id));
     setShowModal(true);
   };
 
@@ -421,6 +452,33 @@ const Project: React.FC = () => {
                   value={dueDate}
                   onChange={e => setDueDate(e.target.value)}
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Tags</label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-slate-600 rounded-lg p-3 bg-gray-50 dark:bg-slate-700/50">
+                  {tags.length === 0 ? (
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">No tags available</p>
+                  ) : (
+                    tags.map(tag => (
+                      <label key={tag.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 p-2 rounded transition">
+                        <input
+                          type="checkbox"
+                          checked={selectedTagIds.includes(tag.id)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setSelectedTagIds([...selectedTagIds, tag.id]);
+                            } else {
+                              setSelectedTagIds(selectedTagIds.filter(id => id !== tag.id));
+                            }
+                          }}
+                          className="rounded"
+                        />
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color }}></span>
+                        <span className="text-gray-900 dark:text-white text-sm">{tag.name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
               </div>
               {editingTask && (
                 <div>

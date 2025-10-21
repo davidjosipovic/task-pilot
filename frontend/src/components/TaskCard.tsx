@@ -5,6 +5,7 @@ interface TaskCardProps {
   status: string;
   priority?: string;
   dueDate?: string;
+  tags?: { id: string; name: string; color: string }[];
   assignedUser?: string;
 }
 
@@ -49,7 +50,7 @@ const getDaysUntilDue = (dueDate: string): { days: number; isExpired: boolean; t
   }
 };
 
-const TaskCard: React.FC<TaskCardProps> = ({ title, status, priority, dueDate, assignedUser }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ title, status, priority, dueDate, tags, assignedUser }) => {
   const dueDateInfo = dueDate ? getDaysUntilDue(dueDate) : null;
   
   return (
@@ -62,6 +63,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, status, priority, dueDate, a
           </span>
         )}
       </div>
+      {tags && tags.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {tags.map(tag => (
+            <span key={tag.id} className="text-xs px-2 py-1 rounded-full font-medium text-white" style={{ backgroundColor: tag.color }}>
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
         <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusColors[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'}`}>
           {status}
