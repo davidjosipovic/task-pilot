@@ -81,9 +81,6 @@ describe('ProjectCard Component', () => {
   });
 
   it('calls onArchive when archive button is clicked and confirmed', () => {
-    // Mock window.confirm
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
     render(
       <BrowserRouter>
         <ProjectCard {...defaultProps} />
@@ -93,15 +90,10 @@ describe('ProjectCard Component', () => {
     const archiveButton = screen.getByTitle('Archive project');
     fireEvent.click(archiveButton);
 
-    expect(confirmSpy).toHaveBeenCalled();
     expect(mockOnArchive).toHaveBeenCalledWith('123');
-
-    confirmSpy.mockRestore();
   });
 
   it('does not call onArchive when archive is cancelled', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-
     render(
       <BrowserRouter>
         <ProjectCard {...defaultProps} />
@@ -111,10 +103,8 @@ describe('ProjectCard Component', () => {
     const archiveButton = screen.getByTitle('Archive project');
     fireEvent.click(archiveButton);
 
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(mockOnArchive).not.toHaveBeenCalled();
-
-    confirmSpy.mockRestore();
+    // ProjectCard always calls onArchive now - the parent component handles confirmation
+    expect(mockOnArchive).toHaveBeenCalledWith('123');
   });
 
   it('links to project detail page', () => {

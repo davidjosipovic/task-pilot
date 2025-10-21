@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { AuthContext } from '../context/AuthContext';
+import { ThemeProvider } from '../context/ThemeContext';
 
 describe('Navbar Component', () => {
   const mockLogout = vi.fn();
@@ -10,11 +11,13 @@ describe('Navbar Component', () => {
 
   const renderWithAuth = (token: string | null) => {
     return render(
-      <AuthContext.Provider value={{ token, setToken: mockSetToken, logout: mockLogout }}>
-        <BrowserRouter>
-          <Navbar />
-        </BrowserRouter>
-      </AuthContext.Provider>
+      <ThemeProvider>
+        <AuthContext.Provider value={{ token, setToken: mockSetToken, logout: mockLogout }}>
+          <BrowserRouter>
+            <Navbar />
+          </BrowserRouter>
+        </AuthContext.Provider>
+      </ThemeProvider>
     );
   };
 
