@@ -5,18 +5,6 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TaskPilot</title>
-    <style>
-      /* Prevent FOUC - hide body until styles are loaded */
-      body {
-        visibility: hidden;
-        opacity: 0;
-        transition: opacity 0.1s;
-      }
-      body.loaded {
-        visibility: visible;
-        opacity: 1;
-      }
-    </style>
     <script>
       // Prevent flash of wrong theme on page load
       (function() {
@@ -25,11 +13,6 @@
           document.documentElement.classList.add('dark');
         }
       })();
-      
-      // Show body once page is loaded
-      window.addEventListener('DOMContentLoaded', function() {
-        document.body.classList.add('loaded');
-      });
     </script>
   </head>
   <body>
