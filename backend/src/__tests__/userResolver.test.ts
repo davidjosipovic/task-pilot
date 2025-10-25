@@ -46,15 +46,15 @@ describe('User Resolver Tests', () => {
         {
           name: 'Jane Doe',
           email: 'jane@example.com',
-          password: 'mypassword',
+          password: 'mypassword123',
         }
       );
 
       const user = await User.findOne({ email: 'jane@example.com' });
-      expect(user?.password).not.toBe('mypassword');
+      expect(user?.password).not.toBe('mypassword123');
       
       // Verify password is hashed
-      const isMatch = await bcrypt.compare('mypassword', user!.password);
+      const isMatch = await bcrypt.compare('mypassword123', user!.password);
       expect(isMatch).toBe(true);
     });
 
@@ -64,7 +64,7 @@ describe('User Resolver Tests', () => {
         {
           name: 'User One',
           email: 'duplicate@example.com',
-          password: 'pass123',
+          password: 'password123',
         }
       );
 
@@ -74,7 +74,7 @@ describe('User Resolver Tests', () => {
           {
             name: 'User Two',
             email: 'duplicate@example.com',
-            password: 'pass456',
+            password: 'password456',
           }
         )
       ).rejects.toThrow();
@@ -106,7 +106,7 @@ describe('User Resolver Tests', () => {
       expect(result.user.email).toBe('test@example.com');
       
       // Verify token is valid
-      const decoded = jwt.verify(result.token, process.env.JWT_SECRET || 'dev_secret') as any;
+      const decoded = jwt.verify(result.token, process.env.JWT_SECRET || 'dev_secret_key_for_local_development') as any;
       expect(decoded.userId).toBeTruthy();
     });
 
