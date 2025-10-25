@@ -3,6 +3,8 @@ import { ApolloServer } from 'apollo-server-express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge';
 
 import typeDefs from './schemas/typeDefs';
@@ -18,6 +20,32 @@ import { dashboardHandler } from './utils/dashboardHandler';
 dotenv.config();
 
 const app = express();
+
+// Security: Helmet for HTTP headers
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for GraphQL playground
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Security: Rate limiting to prevent brute force attacks
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to all routes
+app.use(limiter);
+
+// Stricter rate limit for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login/register attempts per windowMs
+  message: 'Too many authentication attempts, please try again later.',
+  skipSuccessfulRequests: true, // Don't count successful requests
+});
 
 // Allow multiple origins for CORS
 const allowedOrigins = [

@@ -2,7 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import logger from '../utils/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  logger.error('JWT_SECRET is not set in environment variables! Authentication will not work.');
+  throw new Error('JWT_SECRET must be set in environment variables');
+}
 
 export interface AuthRequest extends Request {
   userId?: string;

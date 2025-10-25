@@ -8,6 +8,8 @@ const apollo_server_express_1 = require("apollo-server-express");
 const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const merge_1 = require("@graphql-tools/merge");
 const typeDefs_1 = __importDefault(require("./schemas/typeDefs"));
 const projectTaskTypeDefs_1 = __importDefault(require("./schemas/projectTaskTypeDefs"));
@@ -19,6 +21,28 @@ const loggingPlugin_1 = require("./plugins/loggingPlugin");
 const dashboardHandler_1 = require("./utils/dashboardHandler");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+// Security: Helmet for HTTP headers
+app.use((0, helmet_1.default)({
+    contentSecurityPolicy: false, // Disable CSP for GraphQL playground
+    crossOriginEmbedderPolicy: false,
+}));
+// Security: Rate limiting to prevent brute force attacks
+const limiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+// Apply rate limiting to all routes
+app.use(limiter);
+// Stricter rate limit for auth endpoints
+const authLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 login/register attempts per windowMs
+    message: 'Too many authentication attempts, please try again later.',
+    skipSuccessfulRequests: true, // Don't count successful requests
+});
 // Allow multiple origins for CORS
 const allowedOrigins = [
     'http://localhost:5173',
@@ -95,20 +119,13 @@ async function startServer() {
             console.error('⚠️  MongoDB connection failed:', dbError);
             console.log('⚠️  Server running without database connection');
         }
-        // Start Apollo GraphQL server
-        try {
-            await server.start();
-            server.applyMiddleware({
-                app: app,
-                path: '/graphql',
-                cors: false // Disable Apollo's CORS, use Express CORS instead
-            });
-            console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
-        }
-        catch (apolloError) {
-            console.error('⚠️  Apollo server failed to start:', apolloError);
-            console.log('⚠️  HTTP server running but GraphQL unavailable');
-        }
+        await server.start();
+        server.applyMiddleware({
+            app: app,
+            path: '/graphql',
+            cors: false // Disable Apollo's CORS, use Express CORS instead
+        });
+        console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
     }
     catch (error) {
         console.error('❌ Startup error:', error);

@@ -1,5 +1,3 @@
-
-
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
@@ -7,7 +5,14 @@ import { IUser } from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import logger from '../utils/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';const userResolver = {
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  logger.error('JWT_SECRET is not set in environment variables!');
+  throw new Error('JWT_SECRET must be set in environment variables');
+}
+
+const userResolver = {
   Query: {
     getCurrentUser: async (_: any, __: any, context: { req: AuthRequest }) => {
       const userId = context.req.userId;
@@ -17,6 +22,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';const userResolver = {
   },
   Mutation: {
     registerUser: async (_: any, { name, email, password }: { name: string; email: string; password: string }) => {
+      // Validate password strength
+      if (password.length < 8) {
+        throw new Error('Password must be at least 8 characters long');
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Invalid email format');
+      }
+      
       const existing = await User.findOne({ email });
       if (existing) {
         logger.warn('Registration attempted with existing email', { email });
