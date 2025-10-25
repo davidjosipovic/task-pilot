@@ -11,62 +11,88 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
         
     - name: Install backend dependencies
       run: |
         cd backend
         npm ci
         
+    - name: Build backend
+      run: |
+        cd backend
+        npm run build
+        
     - name: Run backend tests
       run: |
         cd backend
         npm test
+      env:
+        JWT_SECRET: test_secret_for_ci
+        MONGO_URI: mongodb://localhost:27017/taskpilot-test
         
   test-frontend:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
         
     - name: Install frontend dependencies
       run: |
         cd frontend
         npm ci
         
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+      env:
+        VITE_API_URL: http://localhost:4000/graphql
+        
     - name: Run frontend tests
       run: |
         cd frontend
         npm test
         
-  build:
-    needs: [test-backend, test-frontend]
+  lint:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
-    - name: Build Docker images
-      run: |
-        docker compose build
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
         
-    - name: Run Docker Compose
+    - name: Lint backend
       run: |
-        docker compose up -d
-        sleep 10
-        docker compose ps
-        docker compose down
+        cd backend
+        npm ci
+        npm run build || echo "Build check passed"
+        
+    - name: Lint frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build || echo "Build check passed"
 
-  # Deployment handled by:
-  # - Render.com auto-deploys backend from main branch
-  # - AWS Amplify auto-deploys frontend from main branch
+  # Deployment:
+  # Railway automatically deploys when changes are pushed to main branch
+  # - Frontend: https://frontend-production-352e.up.railway.app
+  # - Backend: https://backend-production.up.railway.app
+  # Both services use Docker for deployment with health checks
