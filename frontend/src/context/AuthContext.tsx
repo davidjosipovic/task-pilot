@@ -19,7 +19,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [token]);
 
-  const logout = () => setToken(null);
+  const logout = () => {
+    setToken(null);
+    // Force page reload to clear Apollo cache
+    window.location.href = '/login';
+  };
 
   return (
     <AuthContext.Provider value={{ token, setToken, logout }}>
