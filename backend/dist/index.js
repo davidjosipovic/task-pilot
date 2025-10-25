@@ -22,8 +22,6 @@ const app = (0, express_1.default)();
 // Allow multiple origins for CORS
 const allowedOrigins = [
     'http://localhost:5173',
-    'https://main.d3gxu1z7qiv7tn.amplifyapp.com', // Your AWS Amplify frontend
-    /\.amplifyapp\.com$/, // Allow any Amplify domain
     /\.railway\.app$/ // Allow Railway domains
 ];
 app.use((0, cors_1.default)({
