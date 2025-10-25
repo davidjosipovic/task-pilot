@@ -5,11 +5,12 @@ import { IUser } from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import logger from '../utils/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_for_local_development';
 
-if (!JWT_SECRET) {
-  logger.error('JWT_SECRET is not set in environment variables!');
-  throw new Error('JWT_SECRET must be set in environment variables');
+// In production, JWT_SECRET must be properly set
+if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET === 'dev_secret_key_for_local_development')) {
+  logger.error('JWT_SECRET is not set in production environment!');
+  throw new Error('JWT_SECRET must be set in production environment variables');
 }
 
 const userResolver = {
