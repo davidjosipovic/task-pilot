@@ -401,10 +401,10 @@ const Project: React.FC = () => {
     <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 transition duration-200">
         <Navbar />
-      <main className="p-8">
-        <div className="flex justify-between items-center mb-6">
+      <main className="p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
               {projectData?.getProject?.title || 'Project'}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -414,7 +414,7 @@ const Project: React.FC = () => {
           {!isArchived && (
             <button 
               onClick={openCreateModal} 
-              className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              className="w-full sm:w-auto bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <span className="text-xl">+</span> New Task
             </button>

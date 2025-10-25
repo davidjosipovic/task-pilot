@@ -101,9 +101,9 @@ const Archive: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 transition duration-200">
       <Navbar />
-      <main className="p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Archived Projects</h1>
+      <main className="p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">Archived Projects</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">View and restore your archived projects</p>
         </div>
 

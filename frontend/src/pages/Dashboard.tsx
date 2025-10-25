@@ -202,22 +202,22 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 transition duration-200">
       <Navbar />
-      <main className="p-8">
-          <div className="flex justify-between items-center mb-8">
+      <main className="p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-white">My Projects</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">My Projects</h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and organize your work</p>
             </div>
             <button 
               onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              className="w-full sm:w-auto bg-blue-600 dark:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
             >
               <span className="text-xl">+</span> New Project
             </button>
           </div>
 
           {showForm && (
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg mb-8 border border-blue-100 dark:border-slate-700">
+            <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-xl shadow-lg mb-6 sm:mb-8 border border-blue-100 dark:border-slate-700">
               <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Create New Project</h3>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
