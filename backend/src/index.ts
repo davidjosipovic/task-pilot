@@ -103,13 +103,19 @@ async function startServer() {
       console.log('⚠️  Server running without database connection');
     }
     
-    await server.start();
-    server.applyMiddleware({ 
-      app: app as any, 
-      path: '/graphql',
-      cors: false // Disable Apollo's CORS, use Express CORS instead
-    });
-    console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
+    // Start Apollo GraphQL server
+    try {
+      await server.start();
+      server.applyMiddleware({ 
+        app: app as any, 
+        path: '/graphql',
+        cors: false // Disable Apollo's CORS, use Express CORS instead
+      });
+      console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
+    } catch (apolloError) {
+      console.error('⚠️  Apollo server failed to start:', apolloError);
+      console.log('⚠️  HTTP server running but GraphQL unavailable');
+    }
     
   } catch (error) {
     console.error('❌ Startup error:', error);

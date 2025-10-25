@@ -12,12 +12,21 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     archived: Boolean!
   }
 
+  type Tag {
+    id: ID!
+    name: String!
+    color: String!
+    projectId: ID!
+  }
+
   type Task {
     id: ID!
     title: String!
     description: String
     status: String!
     priority: String!
+    dueDate: String
+    tags: [Tag!]
     assignedUser: User
     projectId: ID!
     createdAt: String
@@ -29,6 +38,7 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     getArchivedProjects: [Project!]
     getProject(id: ID!): Project
     getTasksByProject(projectId: ID!): [Task!]
+    getTagsByProject(projectId: ID!): [Tag!]
   }
 
   extend type Mutation {
@@ -36,9 +46,12 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     deleteProject(id: ID!): Boolean!
     archiveProject(id: ID!): Project!
     unarchiveProject(id: ID!): Project!
-    createTask(projectId: ID!, title: String!, description: String, assignedUser: ID, priority: String): Task!
-    updateTask(id: ID!, title: String, description: String, status: String, priority: String, assignedUser: ID): Task!
+    createTask(projectId: ID!, title: String!, description: String, assignedUser: ID, priority: String, dueDate: String, tagIds: [ID!]): Task!
+    updateTask(id: ID!, title: String, description: String, status: String, priority: String, dueDate: String, assignedUser: ID, tagIds: [ID!]): Task!
     deleteTask(id: ID!): Boolean!
+    createTag(projectId: ID!, name: String!, color: String): Tag!
+    updateTag(id: ID!, name: String, color: String): Tag!
+    deleteTag(id: ID!): Boolean!
   }
 `;
 exports.default = projectTaskTypeDefs;

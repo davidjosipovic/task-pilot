@@ -22,6 +22,8 @@ const app = (0, express_1.default)();
 // Allow multiple origins for CORS
 const allowedOrigins = [
     'http://localhost:5173',
+    'https://main.d3gxu1z7qiv7tn.amplifyapp.com', // Your AWS Amplify frontend
+    /\.amplifyapp\.com$/, // Allow any Amplify domain
     /\.railway\.app$/ // Allow Railway domains
 ];
 app.use((0, cors_1.default)({
@@ -93,13 +95,20 @@ async function startServer() {
             console.error('⚠️  MongoDB connection failed:', dbError);
             console.log('⚠️  Server running without database connection');
         }
-        await server.start();
-        server.applyMiddleware({
-            app: app,
-            path: '/graphql',
-            cors: false // Disable Apollo's CORS, use Express CORS instead
-        });
-        console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
+        // Start Apollo GraphQL server
+        try {
+            await server.start();
+            server.applyMiddleware({
+                app: app,
+                path: '/graphql',
+                cors: false // Disable Apollo's CORS, use Express CORS instead
+            });
+            console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
+        }
+        catch (apolloError) {
+            console.error('⚠️  Apollo server failed to start:', apolloError);
+            console.log('⚠️  HTTP server running but GraphQL unavailable');
+        }
     }
     catch (error) {
         console.error('❌ Startup error:', error);
