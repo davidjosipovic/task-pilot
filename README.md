@@ -1,153 +1,145 @@
 # TaskPilot 📋
 
-A full-stack project management application built with modern web technologies. TaskPilot helps teams organize projects and manage tasks using an intuitive Kanban board interface with drag-and-drop functionality.
+A modern, full-stack project management application with Kanban boards, team collaboration, and secure authentication. Built with React, Node.js, GraphQL, and MongoDB.
 
 ## 🚀 Live Demo
 
-**Try it now:** [https://main.d3gxu1z7qiv7tn.amplifyapp.com](https://main.d3gxu1z7qiv7tn.amplifyapp.com)
+**Production:** [https://frontend-production-352e.up.railway.app](https://frontend-production-352e.up.railway.app)
 
-- **Frontend**: AWS Amplify
-- **Backend API**: AWS Elastic Beanstalk
+- **Frontend**: Railway (Docker)
+- **Backend API**: Railway (Docker)
 - **Database**: MongoDB Atlas
 
-![Build Status](https://img.shields.io/github/actions/workflow/status/davidjosipovic/task-pilot/ci.yml?branch=main&style=for-the-badge)
 ![Tech Stack](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![GraphQL](https://img.shields.io/badge/GraphQL-E10098?style=for-the-badge&logo=graphql&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
 
 ## ✨ Features
 
-- 🔐 **User Authentication** - Secure JWT-based authentication
-- 📊 **Project Management** - Create, view, and delete projects
-- ✅ **Kanban Board** - Visual task management with drag-and-drop
-- 🎯 **Task CRUD** - Create, update, delete, and assign tasks
-- 👥 **Team Collaboration** - Multi-user project access
-- 🎨 **Modern UI** - Beautiful, responsive interface with TailwindCSS
-- 🧪 **Fully Tested** - 35 comprehensive tests (100% passing)
-- 🐳 **Docker Ready** - Containerized with Docker Compose
-- ☁️ **Cloud Deployed** - Live on AWS (Amplify + Railway)
-- 🔄 **CI/CD Pipeline** - Automated testing and deployment with GitHub Actions
-- 📈 **Logging & Monitoring** - Structured logs, performance tracking, web dashboard
-- 📦 **Archive Feature** - Archive/restore projects with read-only mode
+### Core Features
+- 🔐 **Secure Authentication** - JWT-based auth with bcrypt password hashing
+- 📊 **Project Management** - Create, organize, and archive projects
+- ✅ **Kanban Board** - Drag-and-drop task management (TODO → DOING → DONE)
+- 🎯 **Task Management** - Full CRUD with priority, due dates, and tags
+- 🏷️ **Custom Tags** - Color-coded tags for task organization
+- 👥 **Team Collaboration** - Multi-user project access with proper authorization
+- 📦 **Archive System** - Archive projects with read-only mode
+- 🌙 **Dark Mode** - Beautiful dark theme with smooth transitions
+- 📱 **Fully Responsive** - Mobile-first design with hamburger menu
+
+### Technical Features
+- � **Security Hardened** - Helmet.js, rate limiting, input validation
+- � **Performance** - Apollo Client caching, optimized queries
+- 🧪 **Well Tested** - Comprehensive test coverage with Jest & Vitest
+- � **Structured Logging** - Winston logging with monitoring dashboard
+- 🐳 **Production Ready** - Docker deployment with health checks
+- ⚡ **Modern Stack** - React 19, Vite, TypeScript, GraphQL
 
 ## 🛠️ Tech Stack
 
+### Frontend
+- **React 19** - Latest UI library
+- **TypeScript** - Type safety
+- **Apollo Client** - GraphQL state management
+- **TailwindCSS 4** - Modern styling
+- **React Router** - Navigation
+- **React DnD** - Drag and drop functionality
+- **Vite 7** - Lightning-fast build tool
+
 ### Backend
-- **Node.js** + **Express** - Server framework
+- **Node.js 20** - Runtime
+- **Express** - Web framework
 - **Apollo Server** - GraphQL API
-- **MongoDB** + **Mongoose** - Database
+- **MongoDB + Mongoose** - Database
 - **TypeScript** - Type safety
 - **JWT** - Authentication
-- **bcrypt** - Password hashing
-- **Jest** - Testing framework
+- **Winston** - Structured logging
+- **Helmet** - Security headers
+- **Express Rate Limit** - DDoS protection
 
-### Frontend
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Apollo Client** - GraphQL client
-- **React Router** - Navigation
-- **TailwindCSS** - Styling
-- **React DnD** - Drag and drop
-- **Vite** - Build tool
-- **Vitest** - Testing framework
-
-### DevOps & Cloud
+### DevOps
 - **Docker** - Containerization
-- **Docker Compose** - Multi-container orchestration
-- **AWS Amplify** - Frontend hosting & CI/CD
-- **AWS Elastic Beanstalk** - Backend hosting
-- **MongoDB Atlas** - Cloud database
-- **GitHub Actions** - Automated testing & deployment
+- **Railway** - Cloud deployment platform
+- **MongoDB Atlas** - Managed database
+- **GitHub** - Version control
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 20+
+- Docker & Docker Compose
 - MongoDB (or use Docker)
-- npm or yarn
 
-### Option 1: Docker (Recommended)
+### Local Development
 
+1. **Clone the repository**
 ```bash
-# Clone the repository
 git clone https://github.com/davidjosipovic/task-pilot.git
 cd task-pilot
-
-# Start all services with Docker Compose
-docker compose up
-
-# Access the application
-# Frontend: http://localhost:5173
-# Backend: http://localhost:4000/graphql
 ```
 
-### Option 2: Local Development
-
-#### Backend Setup
+2. **Backend Setup**
 ```bash
 cd backend
 npm install
-npm start
+
+# Create .env file
+cat > .env << EOF
+MONGO_URI=mongodb://localhost:27017/taskpilot
+JWT_SECRET=dev_secret_key_for_local_development
+PORT=4000
+NODE_ENV=development
+EOF
+
+# Start backend
+npm run dev
 ```
 
-Backend runs on `http://localhost:4000`
+Backend runs on `http://localhost:4000/graphql`
 
-#### Frontend Setup
+3. **Frontend Setup**
 ```bash
 cd frontend
 npm install
+
+# Create .env file
+cat > .env << EOF
+VITE_API_URL=http://localhost:4000/graphql
+EOF
+
+# Start frontend
 npm run dev
 ```
 
 Frontend runs on `http://localhost:5173`
 
-#### Environment Variables
+### Docker Development
 
-Create `.env` file in backend directory:
-```env
-MONGODB_URI=mongodb://localhost:27017/taskpilot
-JWT_SECRET=your-secret-key-here
-NODE_ENV=development
+```bash
+# Start MongoDB
+docker run -d -p 27017:27017 --name mongodb mongo:latest
+
+# Or use full Docker Compose setup (if available)
+docker compose up
 ```
 
 ## 🧪 Testing
 
-### Run All Tests
 ```bash
-# Backend tests (21 tests)
+# Backend tests
 cd backend
-npm test
+npm test                # Run all tests
+npm run test:watch      # Watch mode
+npm run test:coverage   # Coverage report
 
-# Frontend tests (14 tests)
+# Frontend tests
 cd frontend
-npm test
-
-# With coverage
-npm run test:coverage
+npm test                # Run all tests
+npm run test:ui         # Interactive UI
 ```
-
-### Test Coverage
-- **35 total tests** - 100% passing ✅
-- Backend: Authentication, Projects, Tasks
-- Frontend: Components, Navigation, UI
-- See [TESTING.md](./TESTING.md) for details
-
-## 📚 Documentation
-
-Comprehensive guides for different aspects of the application:
-
-- **[LOGGING_MONITORING.md](./LOGGING_MONITORING.md)** - Logging configuration, log files, environment variables
-- **[LOGGING_TUTORIAL.md](./LOGGING_TUTORIAL.md)** - Real-world examples, debugging patterns, security monitoring
-- **[MONITORING_DASHBOARD.md](./MONITORING_DASHBOARD.md)** - Dashboard features, analytics, security patterns
-- **[LOGGING_IMPLEMENTATION.md](./LOGGING_IMPLEMENTATION.md)** - Technical implementation details and summary
-- **[AWS_DEPLOYMENT.md](./AWS_DEPLOYMENT.md)** - AWS deployment instructions
-- **[TESTING.md](./TESTING.md)** - Test setup and coverage
-- **[ARCHIVE_FEATURE.md](./ARCHIVE_FEATURE.md)** - Project archiving feature
-- **[CICD_SETUP.md](./CICD_SETUP.md)** - CI/CD pipeline configuration
 
 ## 📁 Project Structure
 
@@ -155,197 +147,217 @@ Comprehensive guides for different aspects of the application:
 task-pilot/
 ├── backend/
 │   ├── src/
-│   │   ├── models/          # MongoDB models
+│   │   ├── models/          # Mongoose models (User, Project, Task, Tag)
 │   │   ├── resolvers/       # GraphQL resolvers
-│   │   ├── schemas/         # GraphQL schemas
-│   │   ├── middleware/      # Auth middleware
-│   │   └── __tests__/       # Test files
-│   ├── Dockerfile
+│   │   ├── schemas/         # GraphQL type definitions
+│   │   ├── middleware/      # Auth, logging, CORS
+│   │   ├── utils/           # Logger, dashboard handler
+│   │   ├── plugins/         # Apollo plugins
+│   │   └── __tests__/       # Backend tests
+│   ├── Dockerfile           # Production Docker build
 │   └── package.json
+│
 ├── frontend/
 │   ├── src/
 │   │   ├── components/      # React components
 │   │   ├── pages/           # Page components
-│   │   ├── context/         # React context
-│   │   └── __tests__/       # Test files
-│   ├── Dockerfile
+│   │   ├── context/         # Auth & Theme context
+│   │   └── __tests__/       # Frontend tests
+│   ├── Dockerfile           # Production Docker build
+│   ├── server.cjs           # Production server
 │   └── package.json
-├── docker-compose.yml
+│
 └── README.md
 ```
 
-## 🎯 Key Features Explained
+## 🔐 Security Features
 
-### Authentication
-- JWT token-based authentication
-- Secure password hashing with bcrypt
-- Protected routes and API endpoints
+### Implemented Security Measures
+- ✅ **JWT Authentication** - Secure token-based auth
+- ✅ **Password Hashing** - bcrypt with salt rounds
+- ✅ **HTTP Security Headers** - Helmet.js protection
+- ✅ **Rate Limiting** - 100 req/15min general, 5 req/15min auth
+- ✅ **Input Validation** - Email regex, password strength (8+ chars)
+- ✅ **CORS Protection** - Whitelist only Railway domains
+- ✅ **Authorization Checks** - Project membership validation
+- ✅ **Session Management** - Token refresh on login/logout
+- ✅ **Environment Secrets** - Required JWT_SECRET in production
+- ✅ **SQL Injection Prevention** - MongoDB parameterized queries
 
-### Kanban Board
-- Drag and drop tasks between columns (TODO, DOING, DONE)
-- Real-time status updates
-- Visual feedback during drag operations
+### Security Best Practices
+- Passwords never logged or exposed
+- Sensitive data filtered from logs
+- HTTPS enforced in production
+- Health checks don't expose sensitive info
+- Docker runs as non-root user
 
-### Project Management
-- Create multiple projects
-- Add team members
-- Delete projects (cascading task deletion)
+## � API Documentation
+
+### GraphQL Endpoints
+
+#### Queries
+```graphql
+# User
+getCurrentUser: User
+
+# Projects
+getProjects: [Project!]!              # Active projects
+getArchivedProjects: [Project!]!      # Archived projects
+getProject(id: ID!): Project
+
+# Tasks & Tags
+getTasksByProject(projectId: ID!): [Task!]!
+getTagsByProject(projectId: ID!): [Tag!]!
+```
+
+#### Mutations
+```graphql
+# Authentication
+registerUser(name: String!, email: String!, password: String!): AuthPayload!
+loginUser(email: String!, password: String!): AuthPayload!
+
+# Projects
+createProject(title: String!, description: String): Project!
+deleteProject(id: ID!): Boolean!
+archiveProject(id: ID!): Project!
+unarchiveProject(id: ID!): Project!
+
+# Tasks
+createTask(projectId: ID!, title: String!, description: String, 
+           priority: String, dueDate: String, tagIds: [ID!]): Task!
+updateTask(id: ID!, title: String, description: String, 
+           status: String, priority: String, dueDate: String, 
+           tagIds: [ID!]): Task!
+deleteTask(id: ID!): Boolean!
+
+# Tags
+createTag(projectId: ID!, name: String!, color: String): Tag!
+updateTag(id: ID!, name: String, color: String): Tag!
+deleteTag(id: ID!): Boolean!
+```
+
+## 🎨 UI/UX Features
+
+- **Modern Design** - Gradient backgrounds, smooth animations
+- **Dark Mode** - Full dark theme support with context persistence
+- **Responsive Layout** - Mobile hamburger menu, flexible grids
+- **Drag & Drop** - Intuitive Kanban board interaction
+- **Loading States** - Spinners, skeletons, optimistic updates
+- **Empty States** - Helpful messages and icons
+- **Toast Notifications** - Success/error feedback
+- **Accessibility** - ARIA labels, keyboard navigation
+
+## � Logging & Monitoring
+
+### Log Levels
+- `error` - Critical errors
+- `warn` - Warnings and recoverable issues
+- `info` - Important events (login, CRUD operations)
+- `debug` - Detailed debugging info
+
+### Log Files (Backend)
+```
+backend/logs/
+  ├── combined.log    # All logs
+  └── error.log       # Errors only
+```
+
+### Monitoring Dashboard
+Access real-time logs and metrics:
+```
+Development: http://localhost:4000/monitoring
+Production: https://your-backend.railway.app/monitoring
+```
+
+## 🚢 Deployment
+
+### Railway Deployment
+
+This project is deployed on [Railway](https://railway.app) using Docker.
+
+#### Environment Variables Required
+
+**Backend (Railway)**
+```env
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname
+JWT_SECRET=<generate-strong-random-32+-char-string>
+NODE_ENV=production
+PORT=<auto-provided-by-railway>
+```
+
+**Frontend (Railway)**
+```env
+VITE_API_URL=https://your-backend.railway.app/graphql
+PORT=<auto-provided-by-railway>
+```
+
+#### Deployment Process
+1. Push to GitHub `main` branch
+2. Railway auto-detects Dockerfile
+3. Builds Docker image with build args (VITE_API_URL for frontend)
+4. Deploys to production
+5. Health checks ensure service is running
 
 ## 🔧 Available Scripts
 
 ### Backend
-- `npm start` - Start development server with hot reload
-- `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Generate coverage report
+```bash
+npm run dev          # Development with hot reload (ts-node-dev)
+npm start            # Production (node dist/index.js)
+npm run build        # Compile TypeScript to JavaScript
+npm test             # Run tests
+npm run test:watch   # Tests in watch mode
+npm run test:coverage # Coverage report
+```
 
 ### Frontend
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm test` - Run tests
-- `npm run test:ui` - Run tests with UI
-- `npm run preview` - Preview production build
-
-## 🐳 Docker Commands
-
 ```bash
-# Start all services
-docker compose up
-
-# Start in detached mode
-docker compose up -d
-
-# Stop all services
-docker compose down
-
-# Rebuild containers
-docker compose up --build
-
-# View logs
-docker compose logs -f
-
-# Remove volumes (reset database)
-docker compose down -v
+npm run dev          # Vite dev server
+npm run build        # Production build
+npm run preview      # Preview production build
+npm test             # Run tests
+npm run test:ui      # Vitest UI
 ```
 
-## 📝 API Documentation
+## 🐳 Docker
 
-### GraphQL Endpoints
-
-**Queries:**
-- `getCurrentUser` - Get authenticated user
-- `getProjects` - Get user's projects
-- `getProject(id)` - Get project by ID
-- `getTasksByProject(projectId)` - Get tasks for a project
-
-**Mutations:**
-- `registerUser(name, email, password)` - Register new user
-- `loginUser(email, password)` - Login user
-- `createProject(title, description)` - Create project
-- `deleteProject(id)` - Delete project
-- `createTask(projectId, title, description)` - Create task
-- `updateTask(id, title, description, status)` - Update task
-- `deleteTask(id)` - Delete task
-
-## 🎨 UI/UX Features
-
-- Modern gradient backgrounds
-- Smooth animations and transitions
-- Responsive design (mobile-friendly)
-- Loading states and spinners
-- Empty state messages
-- Hover effects and visual feedback
-- Color-coded status badges
-
-## 🔐 Security Features
-
-- JWT token authentication
-- Password hashing with bcrypt
-- Protected GraphQL resolvers
-- Authorization checks for CRUD operations
-- CORS configuration
-
-## 📊 Logging & Monitoring
-
-TaskPilot includes comprehensive logging and monitoring:
-
-### Features
-- **Structured Logging** - JSON formatted logs for easy parsing
-- **Performance Tracking** - Request/response timing for all operations
-- **Error Tracking** - Automatic error capture and logging
-- **Action Audit Trail** - Track all user actions (create, delete, update, archive)
-- **Live Dashboard** - Real-time statistics and activity feed at `/monitoring`
-
-### Accessing Logs
-
-**Development:**
+### Development
 ```bash
-tail -f backend/logs/combined.log  # All logs
-tail -f backend/logs/error.log     # Errors only
+# Start MongoDB
+docker run -d -p 27017:27017 mongo:latest
 ```
 
-**Production:**
-```
-Dashboard: https://task-pilot-backend-production.up.railway.app/monitoring
-```
-
-### Log Files
-- `combined.log` - All logs (info, warn, debug)
-- `error.log` - Error logs only
-- `application-YYYY-MM-DD.log` - Daily archives (production)
-
-For detailed logging guides, see:
-- [LOGGING_MONITORING.md](./LOGGING_MONITORING.md) - Technical reference
-- [LOGGING_TUTORIAL.md](./LOGGING_TUTORIAL.md) - Real-world examples
-- [MONITORING_DASHBOARD.md](./MONITORING_DASHBOARD.md) - Dashboard usage
-
-## 🚢 Deployment
-
-### Production Deployment (AWS)
-
-**Live Application**: [https://main.d3gxu1z7qiv7tn.amplifyapp.com](https://main.d3gxu1z7qiv7tn.amplifyapp.com)
-
-#### Architecture:
-- **Frontend**: AWS Amplify (auto-deploys from `main` branch)
-- **Backend**: AWS Elastic Beanstalk (Docker)
-- **Database**: MongoDB Atlas (M0 Free Tier)
-- **CI/CD**: GitHub Actions (automated testing & deployment)
-
-#### Deployment Workflow:
-```
-Push to GitHub (main)
-  ↓
-GitHub Actions CI/CD
-  ↓ 
-Run Tests (Jest + Vitest)
-  ↓
-Build Docker Images
-  ↓
-Deploy Backend to AWS EB
-  ↓
-Deploy Frontend to AWS Amplify
-  ↓
-🎉 Live!
+### Production (Railway)
+```dockerfile
+# Multi-stage build with node:20-alpine
+# Frontend: Build React → Serve with 'serve' package
+# Backend: Build TypeScript → Run with Node.js
 ```
 
-### Manual Deployment
+## 🤝 Contributing
 
-See [AWS_DEPLOYMENT.md](./AWS_DEPLOYMENT.md) for detailed deployment instructions.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Environment Variables (Production)
-```env
-MONGO_URI=***REMOVED***
-- Portfolio: [https://main.d3gxu1z7qiv7tn.amplifyapp.com](https://main.d3gxu1z7qiv7tn.amplifyapp.com)
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 👨‍💻 Author
+
+**David Josipović**
+- GitHub: [@davidjosipovic](https://github.com/davidjosipovic)
 
 ## 🙏 Acknowledgments
 
-- Built with modern best practices and industry standards
-- Inspired by Trello and Jira
-- Comprehensive testing approach with 100% passing tests
-- Production-ready architecture deployed on AWS
-- Automated CI/CD pipeline with GitHub Actions
+- React DnD for drag-and-drop functionality
+- TailwindCSS for modern styling
+- Apollo GraphQL for powerful API layer
+- Railway for seamless deployment
 
 ---
 
-**⭐ If you find this project useful, please consider giving it a star!**
-
+**⭐ If you find this project useful, please give it a star!**
