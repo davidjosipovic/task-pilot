@@ -28,16 +28,51 @@ const projectTaskResolver = {
     },
     getProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
-      return Project.findById(id);
+      const project = await Project.findById(id);
+      if (!project) throw new Error('Project not found');
+      
+      // Check if user has access to this project
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      const isMember = project.members.map(String).includes(String(userObjectId));
+      const isOwner = String(project.owner) === context.req.userId;
+      
+      if (!isMember && !isOwner) {
+        throw new Error('Not authorized - you do not have access to this project');
+      }
+      
+      return project;
     },
     getTasksByProject: async (_: any, { projectId }: { projectId: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
-  return Task.find({ projectId }).populate('tags');
+      
+      // Verify user has access to the project before returning tasks
+      const project = await Project.findById(projectId);
+      if (!project) throw new Error('Project not found');
+      
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      const isMember = project.members.map(String).includes(String(userObjectId));
+      const isOwner = String(project.owner) === context.req.userId;
+      
+      if (!isMember && !isOwner) {
+        throw new Error('Not authorized - you do not have access to this project');
+      }
+      
+      return Task.find({ projectId }).populate('tags');
     },
     getTagsByProject: async (_: any, { projectId }: { projectId: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
+      
+      // Check if user has access to this project
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      const isMember = project.members.map(String).includes(String(userObjectId));
+      const isOwner = String(project.owner) === context.req.userId;
+      
+      if (!isMember && !isOwner) {
+        throw new Error('Not authorized - you do not have access to this project');
+      }
+      
       const projectObjectId = new mongoose.Types.ObjectId(projectId);
       return Tag.find({ projectId: projectObjectId });
     },
