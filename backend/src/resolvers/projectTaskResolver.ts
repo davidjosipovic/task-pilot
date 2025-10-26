@@ -1,6 +1,7 @@
 import Project from '../models/Project';
 import Task, { TaskStatus, TaskPriority } from '../models/Task';
 import Tag from '../models/Tag';
+import TaskTemplate from '../models/TaskTemplate';
 import User from '../models/User';
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
@@ -14,7 +15,11 @@ import type {
   TaskIdArgs,
   CreateTagArgs,
   UpdateTagArgs,
-  TagIdArgs
+  TagIdArgs,
+  CreateTemplateArgs,
+  UpdateTemplateArgs,
+  TemplateIdArgs,
+  CreateTaskFromTemplateArgs
 } from '../types/resolvers';
 
 // Type for field resolvers parent argument
@@ -29,6 +34,12 @@ interface TaskParent {
   assignedUser?: mongoose.Types.ObjectId;
   tags?: mongoose.Types.ObjectId[];
   dueDate?: Date;
+}
+
+interface TemplateParent {
+  id: string;
+  createdBy: mongoose.Types.ObjectId;
+  tags?: mongoose.Types.ObjectId[];
 }
 
 const projectTaskResolver = {
@@ -98,8 +109,53 @@ const projectTaskResolver = {
         throw new Error('Not authorized - you do not have access to this project');
       }
       
-      const projectObjectId = new mongoose.Types.ObjectId(projectId);
-      return Tag.find({ projectId: projectObjectId });
+      return Tag.find({ projectId });
+    },
+    getTemplatesByProject: async (_parent: unknown, { projectId }: ProjectIdArg, context: GraphQLContext) => {
+      if (!context.req.userId) throw new Error('Not authenticated');
+      const project = await Project.findById(projectId);
+      if (!project) throw new Error('Project not found');
+      
+      // Check if user has access to this project
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      const isMember = project.members.map(String).includes(String(userObjectId));
+      const isOwner = String(project.owner) === context.req.userId;
+      
+      if (!isMember && !isOwner) {
+        throw new Error('Not authorized - you do not have access to this project');
+      }
+      
+      // Return templates created by user or public templates in this project
+      return TaskTemplate.find({ 
+        projectId,
+        $or: [
+          { createdBy: userObjectId },
+          { isPublic: true }
+        ]
+      }).populate('tags');
+    },
+    getTemplate: async (_parent: unknown, { id }: TemplateIdArgs, context: GraphQLContext) => {
+      if (!context.req.userId) throw new Error('Not authenticated');
+      const template = await TaskTemplate.findById(id);
+      if (!template) throw new Error('Template not found');
+      
+      const project = await Project.findById(template.projectId);
+      if (!project) throw new Error('Project not found');
+      
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      const isMember = project.members.map(String).includes(String(userObjectId));
+      const isOwner = String(project.owner) === context.req.userId;
+      const isCreator = String(template.createdBy) === context.req.userId;
+      
+      if (!isMember && !isOwner) {
+        throw new Error('Not authorized - you do not have access to this project');
+      }
+      
+      if (!template.isPublic && !isCreator) {
+        throw new Error('Not authorized - this template is private');
+      }
+      
+      return template;
     },
   },
   Mutation: {
@@ -245,8 +301,98 @@ const projectTaskResolver = {
       await Tag.findByIdAndDelete(id);
       // Remove tag from all tasks
       await Task.updateMany({ tags: id }, { $pull: { tags: id } });
+      // Remove tag from all templates
+      await TaskTemplate.updateMany({ tags: id }, { $pull: { tags: id } });
       logger.info('Tag deleted', { tagId: id, projectId: tag.projectId, userId: context.req.userId });
       return true;
+    },
+    createTemplate: async (_parent: unknown, { projectId, name, title, description, priority, tagIds, isPublic }: CreateTemplateArgs, context: GraphQLContext) => {
+      if (!context.req.userId) throw new Error('Not authenticated');
+      const project = await Project.findById(projectId);
+      if (!project) throw new Error('Project not found');
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      
+      const template = await TaskTemplate.create({
+        name,
+        title,
+        description: description || '',
+        priority: priority as TaskPriority || 'MEDIUM',
+        tags: tagIds || [],
+        projectId,
+        createdBy: userObjectId,
+        isPublic: isPublic || false,
+      });
+      logger.info('Template created', { templateId: template._id, projectId, userId: context.req.userId, name });
+      return template;
+    },
+    updateTemplate: async (_parent: unknown, { id, name, title, description, priority, tagIds, isPublic }: UpdateTemplateArgs, context: GraphQLContext) => {
+      if (!context.req.userId) throw new Error('Not authenticated');
+      const template = await TaskTemplate.findById(id);
+      if (!template) throw new Error('Template not found');
+      
+      // Only creator can update template
+      if (String(template.createdBy) !== context.req.userId) {
+        throw new Error('Not authorized - only template creator can update it');
+      }
+      
+      if (name !== undefined) template.name = name;
+      if (title !== undefined) template.title = title;
+      if (description !== undefined) template.description = description;
+      if (priority !== undefined) template.priority = priority as TaskPriority;
+      if (tagIds !== undefined) template.tags = tagIds.map(id => new mongoose.Types.ObjectId(id));
+      if (isPublic !== undefined) template.isPublic = isPublic;
+      
+      await template.save();
+      logger.info('Template updated', { templateId: id, userId: context.req.userId });
+      return template;
+    },
+    deleteTemplate: async (_parent: unknown, { id }: TemplateIdArgs, context: GraphQLContext) => {
+      if (!context.req.userId) throw new Error('Not authenticated');
+      const template = await TaskTemplate.findById(id);
+      if (!template) throw new Error('Template not found');
+      
+      // Only creator can delete template
+      if (String(template.createdBy) !== context.req.userId) {
+        throw new Error('Not authorized - only template creator can delete it');
+      }
+      
+      await TaskTemplate.findByIdAndDelete(id);
+      logger.info('Template deleted', { templateId: id, userId: context.req.userId });
+      return true;
+    },
+    createTaskFromTemplate: async (_parent: unknown, { templateId, assignedUser, dueDate }: CreateTaskFromTemplateArgs, context: GraphQLContext) => {
+      if (!context.req.userId) throw new Error('Not authenticated');
+      const template = await TaskTemplate.findById(templateId).populate('tags');
+      if (!template) throw new Error('Template not found');
+      
+      const project = await Project.findById(template.projectId);
+      if (!project) throw new Error('Project not found');
+      
+      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
+      if (!project.members.map(String).includes(String(userObjectId))) {
+        throw new Error('Not authorized - you do not have access to this project');
+      }
+      
+      // Create task from template
+      const task = await Task.create({
+        title: template.title,
+        description: template.description,
+        status: 'TODO' as TaskStatus,
+        priority: template.priority,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        tags: template.tags,
+        assignedUser: assignedUser ? new mongoose.Types.ObjectId(assignedUser) : userObjectId,
+        projectId: template.projectId,
+      });
+      
+      logger.info('Task created from template', { 
+        taskId: task._id, 
+        templateId, 
+        projectId: template.projectId, 
+        userId: context.req.userId 
+      });
+      return task;
     },
   },
   Project: {
@@ -268,6 +414,13 @@ const projectTaskResolver = {
       }
       return String(parent.dueDate);
     }
+  },
+  TaskTemplate: {
+    createdBy: async (parent: TemplateParent) => User.findById(parent.createdBy),
+    tags: async (parent: TemplateParent) => {
+      if (!parent.tags || parent.tags.length === 0) return [];
+      return Tag.find({ _id: { $in: parent.tags } });
+    },
   },
 };
 

@@ -21,6 +21,7 @@ const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Project = lazy(() => import('./pages/Project'));
 const Archive = lazy(() => import('./pages/Archive'));
+const Templates = lazy(() => import('./pages/Templates'));
 
 const AppContent: React.FC = () => {
   const { token } = useAuth();
@@ -75,6 +76,7 @@ const AppContent: React.FC = () => {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/project/:id" element={<Project />} />
+              <Route path="/project/:projectId/templates" element={<Templates />} />
               <Route path="/archive" element={<Archive />} />
             </Route>
             <Route path="*" element={<Login />} />

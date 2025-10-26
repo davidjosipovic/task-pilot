@@ -73,3 +73,34 @@ export interface UpdateTagArgs {
 export interface TagIdArgs {
   id: string;
 }
+
+// Template Resolver Types
+export interface CreateTemplateArgs {
+  projectId: string;
+  name: string;
+  title: string;
+  description?: string;
+  priority?: string;
+  tagIds?: string[];
+  isPublic?: boolean;
+}
+
+export interface UpdateTemplateArgs {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  priority?: string;
+  tagIds?: string[];
+  isPublic?: boolean;
+}
+
+export interface TemplateIdArgs {
+  id: string;
+}
+
+export interface CreateTaskFromTemplateArgs {
+  templateId: string;
+  assignedUser?: string;
+  dueDate?: string;
+}

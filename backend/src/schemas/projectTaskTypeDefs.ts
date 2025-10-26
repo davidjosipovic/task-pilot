@@ -32,12 +32,28 @@ const projectTaskTypeDefs = gql`
     updatedAt: String
   }
 
+  type TaskTemplate {
+    id: ID!
+    name: String!
+    title: String!
+    description: String
+    priority: String!
+    tags: [Tag!]
+    projectId: ID!
+    createdBy: User!
+    isPublic: Boolean!
+    createdAt: String
+    updatedAt: String
+  }
+
   extend type Query {
     getProjects: [Project!]
     getArchivedProjects: [Project!]
     getProject(id: ID!): Project
     getTasksByProject(projectId: ID!): [Task!]
     getTagsByProject(projectId: ID!): [Tag!]
+    getTemplatesByProject(projectId: ID!): [TaskTemplate!]
+    getTemplate(id: ID!): TaskTemplate
   }
 
   extend type Mutation {
@@ -51,6 +67,10 @@ const projectTaskTypeDefs = gql`
     createTag(projectId: ID!, name: String!, color: String): Tag!
     updateTag(id: ID!, name: String, color: String): Tag!
     deleteTag(id: ID!): Boolean!
+    createTemplate(projectId: ID!, name: String!, title: String!, description: String, priority: String, tagIds: [ID!], isPublic: Boolean): TaskTemplate!
+    updateTemplate(id: ID!, name: String, title: String, description: String, priority: String, tagIds: [ID!], isPublic: Boolean): TaskTemplate!
+    deleteTemplate(id: ID!): Boolean!
+    createTaskFromTemplate(templateId: ID!, assignedUser: ID, dueDate: String): Task!
   }
 `;
 
