@@ -3,6 +3,8 @@ import { gql } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { Notification, useNotification } from '../components/Notification';
 
 // Import GET_PROJECTS query to refetch it after unarchive
 const GET_PROJECTS = gql`
@@ -60,6 +62,8 @@ interface UnarchiveProjectData {
 const Archive: React.FC = () => {
   const { data, loading, error } = useQuery<GetArchivedProjectsData>(GET_ARCHIVED_PROJECTS);
   const [unarchiveProject] = useMutation<UnarchiveProjectData>(UNARCHIVE_PROJECT);
+  
+  const { notification, showNotification, dismissNotification } = useNotification();
 
   const handleUnarchive = async (id: string) => {
     try {
@@ -92,9 +96,9 @@ const Archive: React.FC = () => {
           }
         }
       });
+      showNotification('success', 'Project restored successfully!');
     } catch (err) {
-      console.error('Failed to unarchive project:', err);
-      alert('Failed to unarchive project. Please try again.');
+      showNotification('error', 'Failed to restore project. Please try again.');
     }
   };
 
@@ -107,11 +111,7 @@ const Archive: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400 mt-1">View and restore your archived projects</p>
         </div>
 
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        )}
+        {loading && <LoadingSpinner />}
 
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-6 py-4 rounded-lg">
@@ -154,6 +154,12 @@ const Archive: React.FC = () => {
             </div>
           ))}
         </div>
+        {notification && (
+          <Notification 
+            {...notification} 
+            onDismiss={dismissNotification}
+          />
+        )}
       </main>
     </div>
   );

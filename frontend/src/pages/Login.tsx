@@ -4,6 +4,7 @@ import { useMutation } from '@apollo/client/react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { Notification, useNotification } from '../components/Notification';
 
 interface User {
   id: string;
@@ -39,6 +40,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { setToken, token } = useAuth();
   const { isDark, toggleDarkMode } = useTheme();
+  const { notification, showNotification, dismissNotification } = useNotification();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -58,7 +60,7 @@ const Login: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      showNotification('error', 'Invalid email or password. Please try again.');
     }
   };
 
@@ -128,6 +130,12 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
+        {notification && (
+          <Notification 
+            {...notification} 
+            onDismiss={dismissNotification}
+          />
+        )}
       </div>
     </div>
   );

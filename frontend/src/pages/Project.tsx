@@ -7,6 +7,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import Navbar from '../components/Navbar';
 import TaskCard from '../components/TaskCard';
 import TaskModal from '../components/TaskModal';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { Notification, useNotification } from '../components/Notification';
 import { ConfirmDialog, useConfirm } from '../components/ConfirmDialog';
 
 const GET_PROJECT = gql`
@@ -242,6 +244,7 @@ const Project: React.FC = () => {
   const [newTagColor, setNewTagColor] = useState('#3B82F6');
   const [showTagsSection, setShowTagsSection] = useState(false);
   
+  const { notification, showNotification, dismissNotification } = useNotification();
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
   const isArchived = projectData?.getProject?.archived || false;
@@ -294,8 +297,9 @@ const Project: React.FC = () => {
         setEditingTask(null);
         setShowModal(false);
         refetch();
+        showNotification('success', 'Task deleted successfully!');
       } catch (err) {
-        console.error('Failed to delete task:', err);
+        showNotification('error', 'Failed to delete task. Please try again.');
       } finally {
         updateLoading(false);
       }
@@ -338,8 +342,9 @@ const Project: React.FC = () => {
       try {
         await deleteTag({ variables: { id: tagId } });
         refetchTags();
+        showNotification('success', 'Tag deleted successfully!');
       } catch (err) {
-        console.error('Failed to delete tag:', err);
+        showNotification('error', 'Failed to delete tag. Please try again.');
       } finally {
         updateLoading(false);
       }
@@ -431,11 +436,7 @@ const Project: React.FC = () => {
               </div>
             </div>
           </div>
-        )}          {loading && (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          )}
+        )}          {loading && <LoadingSpinner />}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-6 py-4 rounded-lg">
               {error.message}
@@ -694,6 +695,12 @@ const Project: React.FC = () => {
             </form>
             </div>
           </TaskModal>
+          {notification && (
+            <Notification 
+              {...notification} 
+              onDismiss={dismissNotification}
+            />
+          )}
           {confirmDialog && (
             <ConfirmDialog {...confirmDialog} />
           )}

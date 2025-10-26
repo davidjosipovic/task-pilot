@@ -3,6 +3,7 @@ import { gql } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import ProjectCard from '../components/ProjectCard';
 import Navbar from '../components/Navbar';
+import LoadingSpinner from '../components/LoadingSpinner';
 import { Notification, useNotification } from '../components/Notification';
 import { ConfirmDialog, useConfirm } from '../components/ConfirmDialog';
 
@@ -93,7 +94,7 @@ const Dashboard: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   
-  const { notification, showNotification: _, dismissNotification } = useNotification();
+  const { notification, showNotification, dismissNotification } = useNotification();
   const { confirmDialog, openConfirm, updateLoading } = useConfirm();
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -106,9 +107,9 @@ const Dashboard: React.FC = () => {
       setTitle('');
       setDescription('');
       setShowForm(false);
+      showNotification('success', 'Project created successfully!');
     } catch (err) {
-      console.error('Failed to create project:', err);
-      alert('Failed to create project. Please try again.');
+      showNotification('error', 'Failed to create project. Please try again.');
     }
   };
 
@@ -145,7 +146,7 @@ const Dashboard: React.FC = () => {
         }
       });
     } catch (err) {
-      console.error('Failed to delete project:', err);
+      showNotification('error', 'Failed to delete project. Please try again.');
     } finally {
       updateLoading(false);
     }
@@ -192,8 +193,9 @@ const Dashboard: React.FC = () => {
           }
         }
       });
+      showNotification('success', 'Project archived successfully!');
     } catch (err) {
-      console.error('Failed to archive project:', err);
+      showNotification('error', 'Failed to archive project. Please try again.');
     } finally {
       updateLoading(false);
     }
@@ -260,11 +262,7 @@ const Dashboard: React.FC = () => {
             </div>
           )}
 
-          {loading && (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          )}
+          {loading && <LoadingSpinner />}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-6 py-4 rounded-lg">
               {error.message}

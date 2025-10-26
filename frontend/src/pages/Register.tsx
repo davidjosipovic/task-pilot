@@ -4,6 +4,7 @@ import { useMutation } from '@apollo/client/react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { Notification, useNotification } from '../components/Notification';
 
 const REGISTER_USER = gql`
   mutation RegisterUser($name: String!, $email: String!, $password: String!) {
@@ -41,6 +42,7 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const { setToken, token } = useAuth();
   const { isDark, toggleDarkMode } = useTheme();
+  const { notification, showNotification, dismissNotification } = useNotification();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -59,8 +61,9 @@ const Register: React.FC = () => {
         setToken(token);
         navigate('/dashboard');
       }
-    } catch (err) {
-      console.error('Registration error:', err);
+    } catch (err: any) {
+      const message = err?.message || 'Registration failed. Please try again.';
+      showNotification('error', message);
     }
   };
 
@@ -142,6 +145,12 @@ const Register: React.FC = () => {
             </Link>
           </p>
         </div>
+        {notification && (
+          <Notification 
+            {...notification} 
+            onDismiss={dismissNotification}
+          />
+        )}
       </div>
     </div>
   );
