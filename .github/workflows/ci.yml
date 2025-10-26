@@ -10,6 +10,17 @@ jobs:
   test-backend:
     runs-on: ubuntu-latest
     
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - uses: actions/checkout@v4
     
@@ -33,10 +44,11 @@ jobs:
     - name: Run backend tests
       run: |
         cd backend
-        npm test
+        npm test -- --ci --coverage
       env:
         JWT_SECRET: test_secret_for_ci
         MONGO_URI: mongodb://localhost:27017/taskpilot-test
+        NODE_ENV: test
         
   test-frontend:
     runs-on: ubuntu-latest
@@ -66,30 +78,9 @@ jobs:
     - name: Run frontend tests
       run: |
         cd frontend
-        npm test
-        
-  lint:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Lint backend
-      run: |
-        cd backend
-        npm ci
-        npm run build || echo "Build check passed"
-        
-    - name: Lint frontend
-      run: |
-        cd frontend
-        npm ci
-        npm run build || echo "Build check passed"
+        npm test -- --run --coverage
+      env:
+        CI: true
 
   # Deployment:
   # Railway automatically deploys when changes are pushed to main branch
