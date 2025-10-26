@@ -1,6 +1,29 @@
 import { ApolloServer } from 'apollo-server-express';
 import logger from '../utils/logger';
 
+interface GraphQLRequestContext {
+  request: {
+    operationName?: string;
+    query?: string;
+  };
+  contextValue?: {
+    req?: {
+      userId?: string;
+    };
+  };
+}
+
+interface GraphQLResponse {
+  errors?: readonly {
+    message: string;
+    extensions?: Record<string, unknown>;
+  }[];
+}
+
+interface GraphQLResponseContext {
+  response: GraphQLResponse;
+}
+
 export const loggingPlugin = {
   // Log server startup
   async serverWillStart() {
@@ -13,9 +36,9 @@ export const loggingPlugin = {
   },
 
   // Log requests
-  async requestDidStart(requestContext: any) {
+  async requestDidStart(requestContext: GraphQLRequestContext) {
     const { request, contextValue } = requestContext;
-    const userId = (contextValue as any)?.userId;
+    const userId = contextValue?.req?.userId;
     const operationName = request.operationName || 'anonymous';
 
     const startTime = Date.now();
@@ -28,7 +51,7 @@ export const loggingPlugin = {
 
     return {
       // Log completion
-      async willSendResponse(responseContext: any) {
+      async willSendResponse(responseContext: GraphQLResponseContext) {
         const duration = Date.now() - startTime;
         const { response } = responseContext;
 
@@ -37,7 +60,7 @@ export const loggingPlugin = {
           logger.error('GraphQL Error', {
             operation: operationName,
             userId,
-            errors: response.errors.map((err: any) => ({
+            errors: response.errors.map((err) => ({
               message: err.message,
               extensions: err.extensions,
             })),

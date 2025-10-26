@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dashboardHandler = exports.getLogsStats = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const logger_1 = __importDefault(require("./logger"));
 const logsDir = path_1.default.join(__dirname, '../../logs');
 const getLogsStats = async () => {
     try {
@@ -50,7 +51,7 @@ const getLogsStats = async () => {
         };
     }
     catch (error) {
-        console.error('Error reading logs:', error);
+        logger_1.default.error('Error reading logs for dashboard', { error });
         return {
             total: 0,
             byLevel: {},

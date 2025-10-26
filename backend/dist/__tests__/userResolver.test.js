@@ -39,24 +39,24 @@ describe('User Resolver Tests', () => {
             await userResolver_1.default.Mutation.registerUser({}, {
                 name: 'Jane Doe',
                 email: 'jane@example.com',
-                password: 'mypassword',
+                password: 'mypassword123',
             });
             const user = await User_1.default.findOne({ email: 'jane@example.com' });
-            expect(user?.password).not.toBe('mypassword');
+            expect(user?.password).not.toBe('mypassword123');
             // Verify password is hashed
-            const isMatch = await bcrypt_1.default.compare('mypassword', user.password);
+            const isMatch = await bcrypt_1.default.compare('mypassword123', user.password);
             expect(isMatch).toBe(true);
         });
         it('should throw error for duplicate email', async () => {
             await userResolver_1.default.Mutation.registerUser({}, {
                 name: 'User One',
                 email: 'duplicate@example.com',
-                password: 'pass123',
+                password: 'password123',
             });
             await expect(userResolver_1.default.Mutation.registerUser({}, {
                 name: 'User Two',
                 email: 'duplicate@example.com',
-                password: 'pass456',
+                password: 'password456',
             })).rejects.toThrow();
         });
     });
@@ -79,7 +79,7 @@ describe('User Resolver Tests', () => {
             expect(result).toHaveProperty('user');
             expect(result.user.email).toBe('test@example.com');
             // Verify token is valid
-            const decoded = jsonwebtoken_1.default.verify(result.token, process.env.JWT_SECRET || 'dev_secret');
+            const decoded = jsonwebtoken_1.default.verify(result.token, process.env.JWT_SECRET || 'dev_secret_key_for_local_development');
             expect(decoded.userId).toBeTruthy();
         });
         it('should throw error for invalid email', async () => {

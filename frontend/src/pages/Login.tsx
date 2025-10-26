@@ -3,8 +3,9 @@ import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { Notification, useNotification } from '../components/Notification';
+import AuthLayout from '../components/AuthLayout';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface User {
   id: string;
@@ -39,7 +40,6 @@ const Login: React.FC = () => {
   const [loginUser, { loading, error }] = useMutation<LoginUserData, LoginUserVars>(LOGIN_USER);
   const navigate = useNavigate();
   const { setToken, token } = useAuth();
-  const { isDark, toggleDarkMode } = useTheme();
   const { notification, showNotification, dismissNotification } = useNotification();
 
   // Redirect if already logged in
@@ -64,25 +64,17 @@ const Login: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-950 dark:to-slate-900 transition duration-200">
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={toggleDarkMode}
-          className="text-2xl px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition duration-200"
-          title={isDark ? 'Light Mode' : 'Dark Mode'}
-        >
-          {isDark ? '☀️' : '🌙'}
-        </button>
-      </div>
-      <div className="bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">TaskPilot</h1>
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white">Welcome Back</h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Sign in to your account</p>
-        </div>
+  if (loading) {
+    return (
+      <AuthLayout title="Welcome Back" subtitle="Sign in to your account">
+        <LoadingSpinner message="Signing in..." />
+      </AuthLayout>
+    );
+  }
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+  return (
+    <AuthLayout title="Welcome Back" subtitle="Sign in to your account">
+      <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
             <input
@@ -114,11 +106,10 @@ const Login: React.FC = () => {
           )}
 
           <button 
-            className="w-full bg-blue-600 dark:bg-blue-700 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" 
-            type="submit" 
-            disabled={loading}
+            className="w-full bg-blue-600 dark:bg-blue-700 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 shadow-md hover:shadow-lg" 
+            type="submit"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            Sign In
           </button>
         </form>
 
@@ -136,8 +127,7 @@ const Login: React.FC = () => {
             onDismiss={dismissNotification}
           />
         )}
-      </div>
-    </div>
+    </AuthLayout>
   );
 };
 

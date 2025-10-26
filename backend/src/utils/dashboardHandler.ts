@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import logger from './logger';
 
 interface LogEntry {
   timestamp: string;
@@ -57,7 +58,7 @@ export const getLogsStats = async () => {
       topOperations: getTopOperations(logs),
     };
   } catch (error) {
-    console.error('Error reading logs:', error);
+    logger.error('Error reading logs for dashboard', { error });
     return {
       total: 0,
       byLevel: {} as { [key: string]: number },

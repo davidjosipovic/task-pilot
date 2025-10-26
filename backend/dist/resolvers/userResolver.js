@@ -15,7 +15,7 @@ if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET === 'dev
 }
 const userResolver = {
     Query: {
-        getCurrentUser: async (_, __, context) => {
+        getCurrentUser: async (_parent, _args, context) => {
             const userId = context.req.userId;
             if (!userId)
                 return null;
@@ -23,7 +23,7 @@ const userResolver = {
         },
     },
     Mutation: {
-        registerUser: async (_, { name, email, password }) => {
+        registerUser: async (_parent, { name, email, password }) => {
             // Validate password strength
             if (password.length < 8) {
                 throw new Error('Password must be at least 8 characters long');
@@ -44,7 +44,7 @@ const userResolver = {
             logger_1.default.info('User registered', { userId: user._id, email, name });
             return { token, user };
         },
-        loginUser: async (_, { email, password }) => {
+        loginUser: async (_parent, { email, password }) => {
             const user = await User_1.default.findOne({ email });
             if (!user) {
                 logger_1.default.warn('Login failed - user not found', { email });

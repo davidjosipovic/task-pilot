@@ -4,6 +4,7 @@ import User from '../models/User';
 import { IUser } from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import logger from '../utils/logger';
+import type { GraphQLContext, RegisterUserArgs, LoginUserArgs } from '../types/resolvers';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_key_for_local_development';
 
@@ -15,14 +16,14 @@ if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET === 'dev
 
 const userResolver = {
   Query: {
-    getCurrentUser: async (_: any, __: any, context: { req: AuthRequest }) => {
+    getCurrentUser: async (_parent: unknown, _args: unknown, context: GraphQLContext) => {
       const userId = context.req.userId;
       if (!userId) return null;
       return User.findById(userId);
     },
   },
   Mutation: {
-    registerUser: async (_: any, { name, email, password }: { name: string; email: string; password: string }) => {
+    registerUser: async (_parent: unknown, { name, email, password }: RegisterUserArgs) => {
       // Validate password strength
       if (password.length < 8) {
         throw new Error('Password must be at least 8 characters long');
@@ -45,7 +46,7 @@ const userResolver = {
       logger.info('User registered', { userId: user._id, email, name });
       return { token, user };
     },
-    loginUser: async (_: any, { email, password }: { email: string; password: string }) => {
+    loginUser: async (_parent: unknown, { email, password }: LoginUserArgs) => {
       const user = await User.findOne({ email });
       if (!user) {
         logger.warn('Login failed - user not found', { email });

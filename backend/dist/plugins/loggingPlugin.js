@@ -18,7 +18,7 @@ exports.loggingPlugin = {
     // Log requests
     async requestDidStart(requestContext) {
         const { request, contextValue } = requestContext;
-        const userId = contextValue?.userId;
+        const userId = contextValue?.req?.userId;
         const operationName = request.operationName || 'anonymous';
         const startTime = Date.now();
         logger_1.default.debug('GraphQL Request', {

@@ -11,7 +11,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const logger_1 = __importDefault(require("../utils/logger"));
 const projectTaskResolver = {
     Query: {
-        getProjects: async (_parent, _args, context) => {
+        getProjects: async (_, __, context) => {
             // Only return active (non-archived) projects where user is member or owner
             if (!context.req.userId)
                 throw new Error('Not authenticated');
@@ -21,7 +21,7 @@ const projectTaskResolver = {
                 archived: { $ne: true } // Exclude archived projects
             });
         },
-        getArchivedProjects: async (_parent, _args, context) => {
+        getArchivedProjects: async (_, __, context) => {
             // Return archived projects where user is member or owner
             if (!context.req.userId)
                 throw new Error('Not authenticated');
@@ -31,7 +31,7 @@ const projectTaskResolver = {
                 archived: true
             });
         },
-        getProject: async (_parent, { id }, context) => {
+        getProject: async (_, { id }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(id);
@@ -46,7 +46,7 @@ const projectTaskResolver = {
             }
             return project;
         },
-        getTasksByProject: async (_parent, { projectId }, context) => {
+        getTasksByProject: async (_, { projectId }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             // Verify user has access to the project before returning tasks
@@ -61,7 +61,7 @@ const projectTaskResolver = {
             }
             return Task_1.default.find({ projectId }).populate('tags');
         },
-        getTagsByProject: async (_parent, { projectId }, context) => {
+        getTagsByProject: async (_, { projectId }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(projectId);
@@ -79,7 +79,7 @@ const projectTaskResolver = {
         },
     },
     Mutation: {
-        createProject: async (_parent, { title, description }, context) => {
+        createProject: async (_, { title, description }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const userObjectId = new mongoose_1.default.Types.ObjectId(context.req.userId);
@@ -92,7 +92,7 @@ const projectTaskResolver = {
             logger_1.default.info('Project created', { projectId: project._id, userId: context.req.userId, title });
             return project;
         },
-        deleteProject: async (_parent, { id }, context) => {
+        deleteProject: async (_, { id }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(id);
@@ -105,7 +105,7 @@ const projectTaskResolver = {
             logger_1.default.info('Project deleted', { projectId: id, userId: context.req.userId });
             return true;
         },
-        archiveProject: async (_parent, { id }, context) => {
+        archiveProject: async (_, { id }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(id);
@@ -118,7 +118,7 @@ const projectTaskResolver = {
             logger_1.default.info('Project archived', { projectId: id, userId: context.req.userId, title: project.title });
             return project;
         },
-        unarchiveProject: async (_parent, { id }, context) => {
+        unarchiveProject: async (_, { id }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(id);
@@ -131,7 +131,7 @@ const projectTaskResolver = {
             logger_1.default.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
             return project;
         },
-        createTask: async (_parent, { projectId, title, description, assignedUser, priority, dueDate, tagIds }, context) => {
+        createTask: async (_, { projectId, title, description, assignedUser, priority, dueDate, tagIds }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(projectId);
@@ -160,7 +160,7 @@ const projectTaskResolver = {
             logger_1.default.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM', dueDate, tagCount: tagObjectIds.length });
             return task;
         },
-        updateTask: async (_parent, { id, title, description, status, priority, dueDate, assignedUser, tagIds }, context) => {
+        updateTask: async (_, { id, title, description, status, priority, dueDate, assignedUser, tagIds }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const task = await Task_1.default.findById(id);
@@ -194,7 +194,7 @@ const projectTaskResolver = {
             logger_1.default.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority, newDueDate: dueDate, tagCount: tagIds?.length });
             return task;
         },
-        deleteTask: async (_parent, { id }, context) => {
+        deleteTask: async (_, { id }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const task = await Task_1.default.findById(id);
@@ -213,7 +213,7 @@ const projectTaskResolver = {
             logger_1.default.info('Task deleted', { taskId: id, projectId: task.projectId, userId: context.req.userId });
             return true;
         },
-        createTag: async (_parent, { projectId, name, color }, context) => {
+        createTag: async (_, { projectId, name, color }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const project = await Project_1.default.findById(projectId);
@@ -230,7 +230,7 @@ const projectTaskResolver = {
             logger_1.default.info('Tag created', { tagId: tag._id, projectId, userId: context.req.userId, name });
             return tag;
         },
-        updateTag: async (_parent, { id, name, color }, context) => {
+        updateTag: async (_, { id, name, color }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const tag = await Tag_1.default.findById(id);
@@ -250,7 +250,7 @@ const projectTaskResolver = {
             logger_1.default.info('Tag updated', { tagId: id, userId: context.req.userId });
             return tag;
         },
-        deleteTag: async (_parent, { id }, context) => {
+        deleteTag: async (_, { id }, context) => {
             if (!context.req.userId)
                 throw new Error('Not authenticated');
             const tag = await Tag_1.default.findById(id);

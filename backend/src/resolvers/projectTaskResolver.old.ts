@@ -2,38 +2,13 @@ import Project from '../models/Project';
 import Task, { TaskStatus } from '../models/Task';
 import Tag from '../models/Tag';
 import User from '../models/User';
+import { AuthRequest } from '../middleware/auth';
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
-import type { 
-  GraphQLContext, 
-  ProjectIdArgs, 
-  CreateProjectArgs, 
-  ProjectIdArg,
-  CreateTaskArgs,
-  UpdateTaskArgs,
-  TaskIdArgs,
-  CreateTagArgs,
-  UpdateTagArgs,
-  TagIdArgs
-} from '../types/resolvers';
-
-// Type for field resolvers parent argument
-interface ProjectParent {
-  id: string;
-  owner: mongoose.Types.ObjectId;
-  members: mongoose.Types.ObjectId[];
-}
-
-interface TaskParent {
-  id: string;
-  assignedUser?: mongoose.Types.ObjectId;
-  tags?: mongoose.Types.ObjectId[];
-  dueDate?: Date;
-}
 
 const projectTaskResolver = {
   Query: {
-    getProjects: async (_parent: unknown, _args: unknown, context: GraphQLContext) => {
+    getProjects: async (_: any, __: any, context: { req: AuthRequest }) => {
       // Only return active (non-archived) projects where user is member or owner
       if (!context.req.userId) throw new Error('Not authenticated');
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
@@ -42,7 +17,7 @@ const projectTaskResolver = {
         archived: { $ne: true } // Exclude archived projects
       });
     },
-    getArchivedProjects: async (_parent: unknown, _args: unknown, context: GraphQLContext) => {
+    getArchivedProjects: async (_: any, __: any, context: { req: AuthRequest }) => {
       // Return archived projects where user is member or owner
       if (!context.req.userId) throw new Error('Not authenticated');
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
@@ -51,7 +26,7 @@ const projectTaskResolver = {
         archived: true
       });
     },
-    getProject: async (_parent: unknown, { id }: ProjectIdArgs, context: GraphQLContext) => {
+    getProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(id);
       if (!project) throw new Error('Project not found');
@@ -67,7 +42,7 @@ const projectTaskResolver = {
       
       return project;
     },
-    getTasksByProject: async (_parent: unknown, { projectId }: ProjectIdArg, context: GraphQLContext) => {
+    getTasksByProject: async (_: any, { projectId }: { projectId: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       
       // Verify user has access to the project before returning tasks
@@ -84,7 +59,7 @@ const projectTaskResolver = {
       
       return Task.find({ projectId }).populate('tags');
     },
-    getTagsByProject: async (_parent: unknown, { projectId }: ProjectIdArg, context: GraphQLContext) => {
+    getTagsByProject: async (_: any, { projectId }: { projectId: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
@@ -103,7 +78,7 @@ const projectTaskResolver = {
     },
   },
   Mutation: {
-    createProject: async (_parent: unknown, { title, description }: CreateProjectArgs, context: GraphQLContext) => {
+    createProject: async (_: any, { title, description }: { title: string; description?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
       const project = await Project.create({
@@ -115,7 +90,7 @@ const projectTaskResolver = {
       logger.info('Project created', { projectId: project._id, userId: context.req.userId, title });
       return project;
     },
-    deleteProject: async (_parent: unknown, { id }: ProjectIdArgs, context: GraphQLContext) => {
+    deleteProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(id);
       if (!project) throw new Error('Project not found');
@@ -125,7 +100,7 @@ const projectTaskResolver = {
       logger.info('Project deleted', { projectId: id, userId: context.req.userId });
       return true;
     },
-    archiveProject: async (_parent: unknown, { id }: ProjectIdArgs, context: GraphQLContext) => {
+    archiveProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(id);
       if (!project) throw new Error('Project not found');
@@ -135,7 +110,7 @@ const projectTaskResolver = {
       logger.info('Project archived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
-    unarchiveProject: async (_parent: unknown, { id }: ProjectIdArgs, context: GraphQLContext) => {
+    unarchiveProject: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(id);
       if (!project) throw new Error('Project not found');
@@ -145,7 +120,7 @@ const projectTaskResolver = {
       logger.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
-    createTask: async (_parent: unknown, { projectId, title, description, assignedUser, priority, dueDate, tagIds }: CreateTaskArgs, context: GraphQLContext) => {
+    createTask: async (_: any, { projectId, title, description, assignedUser, priority, dueDate, tagIds }: { projectId: string; title: string; description?: string; assignedUser?: string; priority?: string; dueDate?: string; tagIds?: string[] }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
@@ -170,7 +145,7 @@ const projectTaskResolver = {
       logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM', dueDate, tagCount: tagObjectIds.length });
       return task;
     },
-    updateTask: async (_parent: unknown, { id, title, description, status, priority, dueDate, assignedUser, tagIds }: UpdateTaskArgs, context: GraphQLContext) => {
+    updateTask: async (_: any, { id, title, description, status, priority, dueDate, assignedUser, tagIds }: { id: string; title?: string; description?: string; status?: string; priority?: string; dueDate?: string | null; assignedUser?: string; tagIds?: string[] }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const task = await Task.findById(id);
       if (!task) throw new Error('Task not found');
@@ -192,7 +167,7 @@ const projectTaskResolver = {
       logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority, newDueDate: dueDate, tagCount: tagIds?.length });
       return task;
     },
-    deleteTask: async (_parent: unknown, { id }: TaskIdArgs, context: GraphQLContext) => {
+    deleteTask: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const task = await Task.findById(id);
       if (!task) throw new Error('Task not found');
@@ -206,7 +181,7 @@ const projectTaskResolver = {
       logger.info('Task deleted', { taskId: id, projectId: task.projectId, userId: context.req.userId });
       return true;
     },
-    createTag: async (_parent: unknown, { projectId, name, color }: CreateTagArgs, context: GraphQLContext) => {
+    createTag: async (_: any, { projectId, name, color }: { projectId: string; name: string; color?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
@@ -220,7 +195,7 @@ const projectTaskResolver = {
       logger.info('Tag created', { tagId: tag._id, projectId, userId: context.req.userId, name });
       return tag;
     },
-    updateTag: async (_parent: unknown, { id, name, color }: UpdateTagArgs, context: GraphQLContext) => {
+    updateTag: async (_: any, { id, name, color }: { id: string; name?: string; color?: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const tag = await Tag.findById(id);
       if (!tag) throw new Error('Tag not found');
@@ -234,7 +209,7 @@ const projectTaskResolver = {
       logger.info('Tag updated', { tagId: id, userId: context.req.userId });
       return tag;
     },
-    deleteTag: async (_parent: unknown, { id }: TagIdArgs, context: GraphQLContext) => {
+    deleteTag: async (_: any, { id }: { id: string }, context: { req: AuthRequest }) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const tag = await Tag.findById(id);
       if (!tag) throw new Error('Tag not found');
@@ -250,17 +225,17 @@ const projectTaskResolver = {
     },
   },
   Project: {
-    owner: async (parent: ProjectParent) => User.findById(parent.owner),
-    members: async (parent: ProjectParent) => User.find({ _id: { $in: parent.members } }),
-    tasks: async (parent: ProjectParent) => Task.find({ projectId: parent.id }),
+    owner: async (parent: any) => User.findById(parent.owner),
+    members: async (parent: any) => User.find({ _id: { $in: parent.members } }),
+    tasks: async (parent: any) => Task.find({ projectId: parent.id }),
   },
   Task: {
-    assignedUser: async (parent: TaskParent) => parent.assignedUser ? User.findById(parent.assignedUser) : null,
-    tags: async (parent: TaskParent) => {
+    assignedUser: async (parent: any) => parent.assignedUser ? User.findById(parent.assignedUser) : null,
+    tags: async (parent: any) => {
       if (!parent.tags || parent.tags.length === 0) return [];
       return Tag.find({ _id: { $in: parent.tags } });
     },
-    dueDate: (parent: TaskParent) => {
+    dueDate: (parent: any) => {
       if (!parent.dueDate) return null;
       // Ensure we return ISO string format
       if (parent.dueDate instanceof Date) {
