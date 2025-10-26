@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface TaskCardProps {
   title: string;
   status: string;
@@ -9,7 +7,7 @@ interface TaskCardProps {
   assignedUser?: string;
 }
 
-const statusColors: Record<string, string> = {
+const statusStyles: Record<string, string> = {
   TODO: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200',
   DOING: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200',
   DONE: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200',
@@ -73,7 +71,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, status, priority, dueDate, t
         </div>
       )}
       <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-        <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusColors[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'}`}>
+        {/* Status indicator with animation */}
+          <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusStyles[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'}`}>
           {status}
         </span>
         {dueDateInfo && (

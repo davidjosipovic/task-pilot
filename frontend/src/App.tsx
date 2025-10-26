@@ -1,5 +1,5 @@
 
-import React, { useMemo, lazy, Suspense } from 'react';
+import { useMemo, lazy, Suspense } from 'react';
 import {
   ApolloClient,
   InMemoryCache,

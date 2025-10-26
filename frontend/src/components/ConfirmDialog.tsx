@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useRef } from 'react';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -66,9 +66,9 @@ export interface UseConfirmReturn {
 }
 
 export const useConfirm = (): UseConfirmReturn => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [confirmDialog, setConfirmDialog] = React.useState<Omit<ConfirmDialogProps, 'open' | 'onConfirm' | 'onCancel'> | null>(null);
-  const resolveRef = React.useRef<(value: boolean) => void | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<Omit<ConfirmDialogProps, 'open' | 'onConfirm' | 'onCancel'> | null>(null);
+  const resolveRef = useRef<(value: boolean) => void | null>(null);
 
   const openConfirm = (config: Omit<ConfirmDialogProps, 'open' | 'onConfirm' | 'onCancel'>): Promise<boolean> => {
     return new Promise((resolve) => {
