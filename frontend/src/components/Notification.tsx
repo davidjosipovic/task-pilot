@@ -51,7 +51,7 @@ export const Notification: React.FC<NotificationProps> = ({
   }[type];
 
   return (
-    <div className={`fixed top-4 right-4 z-[100] ${bgColor} border ${borderColor} ${textColor} px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md animate-in fade-in slide-in-from-top-2`}>
+    <div className={`fixed bottom-4 right-4 z-[100] ${bgColor} border ${borderColor} ${textColor} px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md animate-in fade-in slide-in-from-bottom-2`}>
       <span className="text-xl font-bold">{icon}</span>
       <p className="flex-1">{message}</p>
       <button 
