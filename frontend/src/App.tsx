@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, lazy, Suspense } from 'react';
 import {
   ApolloClient,
   InMemoryCache,
@@ -9,15 +9,18 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { ApolloProvider } from '@apollo/client/react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Project from './pages/Project';
-import Archive from './pages/Archive';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy load pages for code splitting
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Project = lazy(() => import('./pages/Project'));
+const Archive = lazy(() => import('./pages/Archive'));
 
 const AppContent: React.FC = () => {
   const { token } = useAuth();
@@ -64,17 +67,19 @@ const AppContent: React.FC = () => {
   return (
     <ApolloProvider client={client}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/project/:id" element={<Project />} />
-            <Route path="/archive" element={<Archive />} />
-          </Route>
-          <Route path="*" element={<Login />} />
-        </Routes>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/project/:id" element={<Project />} />
+              <Route path="/archive" element={<Archive />} />
+            </Route>
+            <Route path="*" element={<Login />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </ApolloProvider>
   );
