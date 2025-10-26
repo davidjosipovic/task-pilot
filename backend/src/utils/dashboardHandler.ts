@@ -7,12 +7,23 @@ interface LogEntry {
   timestamp: string;
   level: string;
   message: string;
-  [key: string]: any;
+  userId?: string;
+  operation?: string;
+  [key: string]: unknown;
+}
+
+interface LogStats {
+  total: number;
+  byLevel: { [key: string]: number };
+  recent: LogEntry[];
+  errors: LogEntry[];
+  topUsers?: Array<{ userId: string; count: number }>;
+  topOperations?: Array<{ operation: string; count: number }>;
 }
 
 const logsDir = path.join(__dirname, '../../logs');
 
-export const getLogsStats = async () => {
+export const getLogsStats = async (): Promise<LogStats> => {
   try {
     const combinedLogPath = path.join(logsDir, 'combined.log');
     
@@ -141,17 +152,17 @@ export const dashboardHandler = async (req: Request, res: Response) => {
           
           <div class="card">
             <h2>Info</h2>
-            <div class="value info-level">${(stats.byLevel as any).info || 0}</div>
+            <div class="value info-level">${stats.byLevel.info || 0}</div>
           </div>
           
           <div class="card">
             <h2>Warnings</h2>
-            <div class="value warn-level">${(stats.byLevel as any).warn || 0}</div>
+            <div class="value warn-level">${stats.byLevel.warn || 0}</div>
           </div>
           
           <div class="card">
             <h2>Errors</h2>
-            <div class="value error-level">${(stats.byLevel as any).error || 0}</div>
+            <div class="value error-level">${stats.byLevel.error || 0}</div>
           </div>
         </div>
 
@@ -160,7 +171,7 @@ export const dashboardHandler = async (req: Request, res: Response) => {
             <h2>Top Users</h2>
             <table>
               <tr><th>User ID</th><th>Actions</th></tr>
-              ${(stats as any).topUsers?.map((u: any) => `<tr><td>${u.userId.substring(0, 8)}...</td><td>${u.count}</td></tr>`).join('') || '<tr><td colspan="2">No data</td></tr>'}
+              ${stats.topUsers?.map(u => `<tr><td>${u.userId.substring(0, 8)}...</td><td>${u.count}</td></tr>`).join('') || '<tr><td colspan="2">No data</td></tr>'}
             </table>
           </div>
 
@@ -168,14 +179,14 @@ export const dashboardHandler = async (req: Request, res: Response) => {
             <h2>Top Operations</h2>
             <table>
               <tr><th>Operation</th><th>Count</th></tr>
-              ${(stats as any).topOperations?.map((o: any) => `<tr><td>${o.operation}</td><td>${o.count}</td></tr>`).join('') || '<tr><td colspan="2">No data</td></tr>'}
+              ${stats.topOperations?.map(o => `<tr><td>${o.operation}</td><td>${o.count}</td></tr>`).join('') || '<tr><td colspan="2">No data</td></tr>'}
             </table>
           </div>
         </div>
 
         <div class="card recent-logs">
           <h2>📋 Recent Activity</h2>
-          ${stats.recent.map((log: any) => `
+          ${stats.recent.map(log => `
             <div class="log-entry ${log.level}">
               <span class="timestamp">${log.timestamp}</span> 
               <strong>[${log.level.toUpperCase()}]</strong> 
@@ -188,7 +199,7 @@ export const dashboardHandler = async (req: Request, res: Response) => {
         ${stats.errors.length > 0 ? `
           <div class="card">
             <h2>🚨 Recent Errors</h2>
-            ${stats.errors.map((err: any) => `
+            ${stats.errors.map(err => `
               <div class="log-entry error">
                 <span class="timestamp">${err.timestamp}</span> 
                 <strong>${err.message}</strong>

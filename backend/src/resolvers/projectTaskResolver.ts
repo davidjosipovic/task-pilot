@@ -1,5 +1,5 @@
 import Project from '../models/Project';
-import Task, { TaskStatus } from '../models/Task';
+import Task, { TaskStatus, TaskPriority } from '../models/Task';
 import Tag from '../models/Tag';
 import User from '../models/User';
 import mongoose from 'mongoose';
@@ -183,7 +183,7 @@ const projectTaskResolver = {
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (status !== undefined) task.status = status as TaskStatus;
-      if (priority !== undefined) task.priority = priority as any;
+      if (priority !== undefined) task.priority = priority as TaskPriority;
       if (dueDate !== undefined) task.dueDate = dueDate ? new Date(dueDate) : undefined;
       if (tagIds !== undefined) task.tags = tagIds.map(id => new mongoose.Types.ObjectId(id));
       if (assignedUser !== undefined) task.assignedUser = new mongoose.Types.ObjectId(assignedUser);

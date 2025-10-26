@@ -118,17 +118,17 @@ async function startServer() {
     
     // Start listening FIRST before connecting to MongoDB
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🔗 Health: ${publicUrl}/health`);
+      logger.info('Server started', { port: PORT, publicUrl });
+      logger.info('Health endpoint available', { url: `${publicUrl}/health` });
     });
     
     // Then connect to MongoDB (don't crash if it fails)
     try {
       await mongoose.connect(process.env.MONGO_URI || '', {});
-      console.log('✅ Connected to MongoDB');
+      logger.info('Connected to MongoDB');
     } catch (dbError) {
-      console.error('⚠️  MongoDB connection failed:', dbError);
-      console.log('⚠️  Server running without database connection');
+      logger.error('MongoDB connection failed', { error: dbError });
+      logger.warn('Server running without database connection');
     }
     
     await server.start();
@@ -137,10 +137,10 @@ async function startServer() {
       path: '/graphql',
       cors: false // Disable Apollo's CORS, use Express CORS instead
     });
-    console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
+    logger.info('GraphQL server started', { url: `${publicUrl}/graphql` });
     
   } catch (error) {
-    console.error('❌ Startup error:', error);
+    logger.error('Startup error', { error });
     process.exit(1);
   }
 }

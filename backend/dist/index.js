@@ -17,6 +17,7 @@ const userResolver_1 = __importDefault(require("./resolvers/userResolver"));
 const projectTaskResolver_1 = __importDefault(require("./resolvers/projectTaskResolver"));
 const auth_1 = require("./middleware/auth");
 const httpLogging_1 = require("./middleware/httpLogging");
+const logger_1 = __importDefault(require("./utils/logger"));
 const loggingPlugin_1 = require("./plugins/loggingPlugin");
 const dashboardHandler_1 = require("./utils/dashboardHandler");
 dotenv_1.default.config();
@@ -107,17 +108,17 @@ async function startServer() {
             : process.env.PUBLIC_URL || `http://localhost:${PORT}`;
         // Start listening FIRST before connecting to MongoDB
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`🔗 Health: ${publicUrl}/health`);
+            logger_1.default.info('Server started', { port: PORT, publicUrl });
+            logger_1.default.info('Health endpoint available', { url: `${publicUrl}/health` });
         });
         // Then connect to MongoDB (don't crash if it fails)
         try {
             await mongoose_1.default.connect(process.env.MONGO_URI || '', {});
-            console.log('✅ Connected to MongoDB');
+            logger_1.default.info('Connected to MongoDB');
         }
         catch (dbError) {
-            console.error('⚠️  MongoDB connection failed:', dbError);
-            console.log('⚠️  Server running without database connection');
+            logger_1.default.error('MongoDB connection failed', { error: dbError });
+            logger_1.default.warn('Server running without database connection');
         }
         await server.start();
         server.applyMiddleware({
@@ -125,10 +126,10 @@ async function startServer() {
             path: '/graphql',
             cors: false // Disable Apollo's CORS, use Express CORS instead
         });
-        console.log(`✅ GraphQL server started at ${publicUrl}/graphql`);
+        logger_1.default.info('GraphQL server started', { url: `${publicUrl}/graphql` });
     }
     catch (error) {
-        console.error('❌ Startup error:', error);
+        logger_1.default.error('Startup error', { error });
         process.exit(1);
     }
 }
