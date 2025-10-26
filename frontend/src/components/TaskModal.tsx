@@ -1,5 +1,3 @@
-import { useTheme } from '../context/ThemeContext';
-
 interface TaskModalProps {
   open: boolean;
   onClose: () => void;

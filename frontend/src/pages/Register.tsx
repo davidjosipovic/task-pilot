@@ -61,8 +61,8 @@ const Register: React.FC = () => {
         setToken(token);
         navigate('/dashboard');
       }
-    } catch (err: any) {
-      const message = err?.message || 'Registration failed. Please try again.';
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
       showNotification('error', message);
     }
   };

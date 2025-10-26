@@ -149,9 +149,11 @@ const DraggableTask: React.FC<DraggableTaskProps> = ({ task, onEdit, isArchived 
     }),
   }));
 
+  // react-dnd types don't perfectly align with React ref types
+  // Using type assertion is the recommended approach per react-dnd documentation
   return (
     <div
-      ref={isArchived ? null : (drag as any)}
+      ref={isArchived ? undefined : (drag as unknown as React.Ref<HTMLDivElement>)}
       onClick={() => !isArchived && onEdit(task)}
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className={isArchived ? 'cursor-default' : 'cursor-move'}
@@ -195,9 +197,11 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
     }),
   }));
 
+  // react-dnd types don't perfectly align with React ref types
+  // Using type assertion is the recommended approach per react-dnd documentation
   return (
     <div 
-      ref={isArchived ? null : (drop as any)}
+      ref={isArchived ? undefined : (drop as unknown as React.Ref<HTMLDivElement>)}
       className={`bg-white dark:bg-slate-800 rounded-xl p-5 shadow-md transition-all ${isOver && !isArchived ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-blue-50 dark:bg-slate-700' : ''}`}
     >
       <div className="flex items-center justify-between mb-4">

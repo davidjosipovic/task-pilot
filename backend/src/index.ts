@@ -132,8 +132,10 @@ async function startServer() {
     }
     
     await server.start();
+    // Apollo Server's Express middleware types are not fully compatible
+    // Type assertion needed per Apollo Server v3 documentation
     server.applyMiddleware({ 
-      app: app as any, 
+      app: app as unknown as any, 
       path: '/graphql',
       cors: false // Disable Apollo's CORS, use Express CORS instead
     });

@@ -121,6 +121,8 @@ async function startServer() {
             logger_1.default.warn('Server running without database connection');
         }
         await server.start();
+        // Apollo Server's Express middleware types are not fully compatible
+        // Type assertion needed per Apollo Server v3 documentation
         server.applyMiddleware({
             app: app,
             path: '/graphql',
