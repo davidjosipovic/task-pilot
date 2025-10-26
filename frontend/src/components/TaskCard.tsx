@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger';
+
 interface TaskCardProps {
   title: string;
   status: string;
@@ -43,7 +45,7 @@ const getDaysUntilDue = (dueDate: string): { days: number; isExpired: boolean; t
       return { days, isExpired: days <= 3, text: `${days} days left` };
     }
   } catch (error) {
-    console.error('Error parsing due date:', dueDate, error);
+    logger.error('Error parsing due date', { dueDate, error });
     return { days: 0, isExpired: false, text: 'Invalid date' };
   }
 };
