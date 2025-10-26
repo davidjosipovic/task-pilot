@@ -2,6 +2,7 @@ import { logger } from '../utils/logger';
 
 interface TaskCardProps {
   title: string;
+  description?: string;
   status: string;
   priority?: string;
   dueDate?: string;
@@ -50,45 +51,67 @@ const getDaysUntilDue = (dueDate: string): { days: number; isExpired: boolean; t
   }
 };
 
-const TaskCard: React.FC<TaskCardProps> = ({ title, status, priority, dueDate, tags, assignedUser }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ title, description, status, priority, dueDate, tags, assignedUser }) => {
   const dueDateInfo = dueDate ? getDaysUntilDue(dueDate) : null;
   
   return (
-    <div className="bg-white dark:bg-slate-700 rounded-lg shadow-md dark:shadow-lg p-4 mb-3 border border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-500 transition duration-200 cursor-pointer group">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow cursor-pointer group">
       <div className="flex items-start justify-between mb-2">
-        <h4 className="font-semibold text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">{title}</h4>
-        {priority && (
-          <span className="text-lg" title={priority}>
-            {priorityIcons[priority] || '🟡'}
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            {priority && (
+              <span className="text-lg" title={priority}>
+                {priorityIcons[priority] || '🟡'}
+              </span>
+            )}
+            <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+              {title}
+            </h4>
+          </div>
+          <span className={`inline-block text-xs px-2 py-0.5 rounded font-medium ${statusStyles[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'}`}>
+            {status}
           </span>
-        )}
+        </div>
       </div>
+
+      {description && (
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">{description}</p>
+      )}
+
       {tags && tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2">
+        <div className="flex flex-wrap gap-1 mb-3">
           {tags.map(tag => (
-            <span key={tag.id} className="text-xs px-2 py-1 rounded-full font-medium text-white" style={{ backgroundColor: tag.color }}>
+            <span 
+              key={tag.id} 
+              className="text-xs px-2 py-1 rounded"
+              style={{
+                backgroundColor: `${tag.color}20`,
+                color: tag.color,
+              }}
+            >
               {tag.name}
             </span>
           ))}
         </div>
       )}
-      <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-        {/* Status indicator with animation */}
-          <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusStyles[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200'}`}>
-          {status}
-        </span>
+
+      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2">
+          {assignedUser && (
+            <span className="flex items-center gap-1">
+              👤 {assignedUser}
+            </span>
+          )}
+        </div>
         {dueDateInfo && (
-          <span className={`text-xs px-2 py-1 rounded font-medium ${
+          <span className={`px-2 py-1 rounded font-medium ${
             dueDateInfo.isExpired
-              ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
-              : 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200'
+              ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300'
+              : dueDateInfo.days <= 3
+              ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
           }`}>
-            📅 {dueDateInfo.text}
-          </span>
-        )}
-        {assignedUser && (
-          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <span>👤</span> {assignedUser}
+            � {dueDateInfo.text}
           </span>
         )}
       </div>

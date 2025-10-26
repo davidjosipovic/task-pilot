@@ -158,7 +158,15 @@ const DraggableTask: React.FC<DraggableTaskProps> = ({ task, onEdit, isArchived 
       style={{ opacity: isDragging ? 0.5 : 1 }}
       className={isArchived ? 'cursor-default' : 'cursor-move'}
     >
-      <TaskCard title={task.title} status={task.status} priority={task.priority} dueDate={task.dueDate} tags={task.tags} assignedUser={task.assignedUser?.name} />
+      <TaskCard 
+        title={task.title} 
+        description={task.description}
+        status={task.status} 
+        priority={task.priority} 
+        dueDate={task.dueDate} 
+        tags={task.tags} 
+        assignedUser={task.assignedUser?.name} 
+      />
     </div>
   );
 };

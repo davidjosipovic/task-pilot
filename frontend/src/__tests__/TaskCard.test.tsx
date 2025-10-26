@@ -24,7 +24,7 @@ describe('TaskCard Component', () => {
       />
     );
 
-    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
+    expect(screen.getByText(/Jane Smith/)).toBeInTheDocument();
   });
 
   it('does not render user info when no user assigned', () => {
