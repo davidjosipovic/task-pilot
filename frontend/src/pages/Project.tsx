@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { gql } from '@apollo/client';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
@@ -32,7 +32,6 @@ const GET_TASKS = gql`
       priority
       dueDate
       tags { id name color }
-      assignedUser { id name }
     }
   }
 `;
@@ -105,7 +104,6 @@ interface Task {
   priority: string;
   dueDate?: string;
   tags: { id: string; name: string; color: string }[];
-  assignedUser?: { id: string; name: string };
 }
 
 interface Tag {
@@ -164,8 +162,7 @@ const DraggableTask: React.FC<DraggableTaskProps> = ({ task, onEdit, isArchived 
         status={task.status} 
         priority={task.priority} 
         dueDate={task.dueDate} 
-        tags={task.tags} 
-        assignedUser={task.assignedUser?.name} 
+        tags={task.tags}
       />
     </div>
   );
@@ -235,6 +232,7 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
 
 const Project: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: projectData } = useQuery<GetProjectData>(GET_PROJECT, { variables: { id } });
   const { data, loading, error, refetch } = useQuery<GetTasksData>(GET_TASKS, { variables: { projectId: id } });
   const { data: tagsData, refetch: refetchTags } = useQuery<GetTagsData>(GET_TAGS, { variables: { projectId: id } });
@@ -431,7 +429,7 @@ const Project: React.FC = () => {
           {!isArchived && (
             <div className="flex gap-3 w-full sm:w-auto">
               <button 
-                onClick={() => window.location.href = `/project/${id}/templates`}
+                onClick={() => navigate(`/project/${id}/templates`)}
                 className="flex-1 sm:flex-none bg-gray-600 dark:bg-gray-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

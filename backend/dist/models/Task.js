@@ -41,7 +41,6 @@ const TaskSchema = new mongoose_1.Schema({
     priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'MEDIUM' },
     dueDate: { type: Date },
     tags: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Tag' }],
-    assignedUser: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
     projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Project', required: true },
 }, { timestamps: true });
 exports.default = mongoose_1.default.model('Task', TaskSchema);

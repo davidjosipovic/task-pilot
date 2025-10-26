@@ -4,7 +4,6 @@ export interface IProject extends Document {
   title: string;
   description: string;
   owner: Types.ObjectId;
-  members: Types.ObjectId[];
   archived: boolean;
 }
 
@@ -12,7 +11,6 @@ const ProjectSchema = new Schema<IProject>({
   title: { type: String, required: true },
   description: { type: String },
   owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   archived: { type: Boolean, default: false },
 }, { timestamps: true });
 

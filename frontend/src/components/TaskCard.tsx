@@ -7,7 +7,6 @@ interface TaskCardProps {
   priority?: string;
   dueDate?: string;
   tags?: { id: string; name: string; color: string }[];
-  assignedUser?: string;
 }
 
 const statusStyles: Record<string, string> = {
@@ -51,7 +50,7 @@ const getDaysUntilDue = (dueDate: string): { days: number; isExpired: boolean; t
   }
 };
 
-const TaskCard: React.FC<TaskCardProps> = ({ title, description, status, priority, dueDate, tags, assignedUser }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ title, description, status, priority, dueDate, tags }) => {
   const dueDateInfo = dueDate ? getDaysUntilDue(dueDate) : null;
   
   return (
@@ -95,15 +94,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, description, status, priorit
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <div className="flex items-center gap-2">
-          {assignedUser && (
-            <span className="flex items-center gap-1">
-              👤 {assignedUser}
-            </span>
-          )}
-        </div>
-        {dueDateInfo && (
+      {dueDateInfo && (
+        <div className="flex items-center justify-end text-xs mt-3">
           <span className={`px-2 py-1 rounded font-medium ${
             dueDateInfo.isExpired
               ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300'
@@ -111,10 +103,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ title, description, status, priorit
               ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-300'
               : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
           }`}>
-            � {dueDateInfo.text}
+            �� {dueDateInfo.text}
           </span>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

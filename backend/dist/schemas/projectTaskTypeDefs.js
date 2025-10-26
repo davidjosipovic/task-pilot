@@ -7,7 +7,6 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     title: String!
     description: String
     owner: User!
-    members: [User!]
     tasks: [Task!]
     archived: Boolean!
   }
@@ -27,8 +26,21 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     priority: String!
     dueDate: String
     tags: [Tag!]
-    assignedUser: User
     projectId: ID!
+    createdAt: String
+    updatedAt: String
+  }
+
+  type TaskTemplate {
+    id: ID!
+    name: String!
+    title: String!
+    description: String
+    priority: String!
+    tags: [Tag!]
+    projectId: ID!
+    createdBy: User!
+    isPublic: Boolean!
     createdAt: String
     updatedAt: String
   }
@@ -39,6 +51,8 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     getProject(id: ID!): Project
     getTasksByProject(projectId: ID!): [Task!]
     getTagsByProject(projectId: ID!): [Tag!]
+    getTemplatesByProject(projectId: ID!): [TaskTemplate!]
+    getTemplate(id: ID!): TaskTemplate
   }
 
   extend type Mutation {
@@ -46,12 +60,16 @@ const projectTaskTypeDefs = (0, apollo_server_express_1.gql) `
     deleteProject(id: ID!): Boolean!
     archiveProject(id: ID!): Project!
     unarchiveProject(id: ID!): Project!
-    createTask(projectId: ID!, title: String!, description: String, assignedUser: ID, priority: String, dueDate: String, tagIds: [ID!]): Task!
-    updateTask(id: ID!, title: String, description: String, status: String, priority: String, dueDate: String, assignedUser: ID, tagIds: [ID!]): Task!
+    createTask(projectId: ID!, title: String!, description: String, priority: String, dueDate: String, tagIds: [ID!]): Task!
+    updateTask(id: ID!, title: String, description: String, status: String, priority: String, dueDate: String, tagIds: [ID!]): Task!
     deleteTask(id: ID!): Boolean!
     createTag(projectId: ID!, name: String!, color: String): Tag!
     updateTag(id: ID!, name: String, color: String): Tag!
     deleteTag(id: ID!): Boolean!
+    createTemplate(projectId: ID!, name: String!, title: String!, description: String, priority: String, tagIds: [ID!], isPublic: Boolean): TaskTemplate!
+    updateTemplate(id: ID!, name: String, title: String, description: String, priority: String, tagIds: [ID!], isPublic: Boolean): TaskTemplate!
+    deleteTemplate(id: ID!): Boolean!
+    createTaskFromTemplate(templateId: ID!, dueDate: String): Task!
   }
 `;
 exports.default = projectTaskTypeDefs;

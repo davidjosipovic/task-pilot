@@ -8,7 +8,6 @@ interface TemplateCardProps {
   priority: string;
   tags?: { id: string; name: string; color: string }[];
   isPublic: boolean;
-  createdBy: { name: string };
   onUseTemplate: (templateId: string) => void;
   onEdit?: (templateId: string) => void;
   onDelete?: (templateId: string) => void;
@@ -29,7 +28,6 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   priority,
   tags,
   isPublic,
-  createdBy,
   onUseTemplate,
   onEdit,
   onDelete,
@@ -78,8 +76,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-        <span>by {createdBy.name}</span>
+      <div className="flex items-center justify-end">
         <button
           onClick={() => onUseTemplate(id)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors"

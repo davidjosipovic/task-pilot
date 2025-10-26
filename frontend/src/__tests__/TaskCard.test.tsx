@@ -8,26 +8,25 @@ describe('TaskCard Component', () => {
       <TaskCard 
         title="Test Task" 
         status="TODO" 
-        assignedUser="John Doe" 
       />
     );
 
     expect(screen.getByText('Test Task')).toBeInTheDocument();
   });
 
-  it('renders assigned user', () => {
+  it('renders task description when provided', () => {
     render(
       <TaskCard 
         title="Test Task" 
+        description="This is a test description"
         status="TODO" 
-        assignedUser="Jane Smith" 
       />
     );
 
-    expect(screen.getByText(/Jane Smith/)).toBeInTheDocument();
+    expect(screen.getByText('This is a test description')).toBeInTheDocument();
   });
 
-  it('does not render user info when no user assigned', () => {
+  it('does not render description when not provided', () => {
     render(
       <TaskCard 
         title="Test Task" 
@@ -35,7 +34,7 @@ describe('TaskCard Component', () => {
       />
     );
 
-    expect(screen.queryByText(/👤/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/description/i)).not.toBeInTheDocument();
   });
 
   it('renders TODO status badge with correct color', () => {

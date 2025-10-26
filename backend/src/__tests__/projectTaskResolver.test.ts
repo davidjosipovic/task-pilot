@@ -51,7 +51,7 @@ describe('Project and Task Resolver Tests', () => {
         expect(project?.title).toBe('New Project');
       });
 
-      it('should set user as owner and member', async () => {
+      it('should set user as owner', async () => {
         const result = await projectTaskResolver.Mutation.createProject(
           {},
           {
@@ -62,8 +62,6 @@ describe('Project and Task Resolver Tests', () => {
 
         const project: any = await Project.findById(result.id);
         expect(project.owner.toString()).toBe(testUserId);
-        expect(project.members).toHaveLength(1);
-        expect(project.members[0].toString()).toBe(testUserId);
       });
 
       it('should throw error when not authenticated', async () => {

@@ -26,12 +26,10 @@ import type {
 interface ProjectParent {
   id: string;
   owner: mongoose.Types.ObjectId;
-  members: mongoose.Types.ObjectId[];
 }
 
 interface TaskParent {
   id: string;
-  assignedUser?: mongoose.Types.ObjectId;
   tags?: mongoose.Types.ObjectId[];
   dueDate?: Date;
 }
@@ -45,20 +43,20 @@ interface TemplateParent {
 const projectTaskResolver = {
   Query: {
     getProjects: async (_parent: unknown, _args: unknown, context: GraphQLContext) => {
-      // Only return active (non-archived) projects where user is member or owner
+      // Only return active (non-archived) projects where user is owner
       if (!context.req.userId) throw new Error('Not authenticated');
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
       return Project.find({ 
-        $or: [ { owner: userObjectId }, { members: userObjectId } ],
+        owner: userObjectId,
         archived: { $ne: true } // Exclude archived projects
       });
     },
     getArchivedProjects: async (_parent: unknown, _args: unknown, context: GraphQLContext) => {
-      // Return archived projects where user is member or owner
+      // Return archived projects where user is owner
       if (!context.req.userId) throw new Error('Not authenticated');
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
       return Project.find({ 
-        $or: [ { owner: userObjectId }, { members: userObjectId } ],
+        owner: userObjectId,
         archived: true
       });
     },
@@ -67,13 +65,11 @@ const projectTaskResolver = {
       const project = await Project.findById(id);
       if (!project) throw new Error('Project not found');
       
-      // Check if user has access to this project
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      const isMember = project.members.map(String).includes(String(userObjectId));
+      // Check if user is owner
       const isOwner = String(project.owner) === context.req.userId;
       
-      if (!isMember && !isOwner) {
-        throw new Error('Not authorized - you do not have access to this project');
+      if (!isOwner) {
+        throw new Error('Not authorized - you do not own this project');
       }
       
       return project;
@@ -81,16 +77,14 @@ const projectTaskResolver = {
     getTasksByProject: async (_parent: unknown, { projectId }: ProjectIdArg, context: GraphQLContext) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       
-      // Verify user has access to the project before returning tasks
+      // Verify user owns the project
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
       
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      const isMember = project.members.map(String).includes(String(userObjectId));
       const isOwner = String(project.owner) === context.req.userId;
       
-      if (!isMember && !isOwner) {
-        throw new Error('Not authorized - you do not have access to this project');
+      if (!isOwner) {
+        throw new Error('Not authorized - you do not own this project');
       }
       
       return Task.find({ projectId }).populate('tags');
@@ -100,13 +94,11 @@ const projectTaskResolver = {
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
       
-      // Check if user has access to this project
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      const isMember = project.members.map(String).includes(String(userObjectId));
+      // Check if user owns project
       const isOwner = String(project.owner) === context.req.userId;
       
-      if (!isMember && !isOwner) {
-        throw new Error('Not authorized - you do not have access to this project');
+      if (!isOwner) {
+        throw new Error('Not authorized - you do not own this project');
       }
       
       return Tag.find({ projectId });
@@ -116,16 +108,15 @@ const projectTaskResolver = {
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
       
-      // Check if user has access to this project
+      // Check if user owns project
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      const isMember = project.members.map(String).includes(String(userObjectId));
       const isOwner = String(project.owner) === context.req.userId;
       
-      if (!isMember && !isOwner) {
-        throw new Error('Not authorized - you do not have access to this project');
+      if (!isOwner) {
+        throw new Error('Not authorized - you do not own this project');
       }
       
-      // Return templates created by user or public templates in this project
+      // Return all templates in project (user is owner, so all templates are accessible)
       return TaskTemplate.find({ 
         projectId,
         $or: [
@@ -142,13 +133,11 @@ const projectTaskResolver = {
       const project = await Project.findById(template.projectId);
       if (!project) throw new Error('Project not found');
       
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      const isMember = project.members.map(String).includes(String(userObjectId));
       const isOwner = String(project.owner) === context.req.userId;
       const isCreator = String(template.createdBy) === context.req.userId;
       
-      if (!isMember && !isOwner) {
-        throw new Error('Not authorized - you do not have access to this project');
+      if (!isOwner) {
+        throw new Error('Not authorized - you do not own this project');
       }
       
       if (!template.isPublic && !isCreator) {
@@ -201,15 +190,15 @@ const projectTaskResolver = {
       logger.info('Project unarchived', { projectId: id, userId: context.req.userId, title: project.title });
       return project;
     },
-    createTask: async (_parent: unknown, { projectId, title, description, assignedUser, priority, dueDate, tagIds }: CreateTaskArgs, context: GraphQLContext) => {
+    createTask: async (_parent: unknown, { projectId, title, description, priority, dueDate, tagIds }: CreateTaskArgs, context: GraphQLContext) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
       if (project.archived) throw new Error('Cannot create tasks in archived project');
-      // Only members can create tasks
+      // Only owner can create tasks
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
-      const assignedUserId = assignedUser ? new mongoose.Types.ObjectId(assignedUser) : undefined;
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can create tasks');
       const dueDateObj = dueDate ? new Date(dueDate) : undefined;
       const tagObjectIds = tagIds ? tagIds.map(id => new mongoose.Types.ObjectId(id)) : [];
       const task = await Task.create({
@@ -219,30 +208,28 @@ const projectTaskResolver = {
         priority: priority || 'MEDIUM',
         dueDate: dueDateObj,
         tags: tagObjectIds,
-        assignedUser: assignedUserId,
         projectId,
       });
       await task.populate('tags');
       logger.info('Task created', { taskId: task._id, projectId, userId: context.req.userId, title, priority: priority || 'MEDIUM', dueDate, tagCount: tagObjectIds.length });
       return task;
     },
-    updateTask: async (_parent: unknown, { id, title, description, status, priority, dueDate, assignedUser, tagIds }: UpdateTaskArgs, context: GraphQLContext) => {
+    updateTask: async (_parent: unknown, { id, title, description, status, priority, dueDate, tagIds }: UpdateTaskArgs, context: GraphQLContext) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const task = await Task.findById(id);
       if (!task) throw new Error('Task not found');
       const project = await Project.findById(task.projectId);
       if (!project) throw new Error('Project not found');
       if (project.archived) throw new Error('Cannot update tasks in archived project');
-      // Only members can update tasks
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      // Only owner can update tasks
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can update tasks');
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (status !== undefined) task.status = status as TaskStatus;
       if (priority !== undefined) task.priority = priority as TaskPriority;
       if (dueDate !== undefined) task.dueDate = dueDate ? new Date(dueDate) : undefined;
       if (tagIds !== undefined) task.tags = tagIds.map(id => new mongoose.Types.ObjectId(id));
-      if (assignedUser !== undefined) task.assignedUser = new mongoose.Types.ObjectId(assignedUser);
       await task.save();
       await task.populate('tags');
       logger.info('Task updated', { taskId: id, userId: context.req.userId, newStatus: status, newPriority: priority, newDueDate: dueDate, tagCount: tagIds?.length });
@@ -255,9 +242,9 @@ const projectTaskResolver = {
       const project = await Project.findById(task.projectId);
       if (!project) throw new Error('Project not found');
       if (project.archived) throw new Error('Cannot delete tasks from archived project');
-      // Only members can delete tasks
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      // Only owner can delete tasks
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can delete tasks');
       await Task.findByIdAndDelete(id);
       logger.info('Task deleted', { taskId: id, projectId: task.projectId, userId: context.req.userId });
       return true;
@@ -266,8 +253,8 @@ const projectTaskResolver = {
       if (!context.req.userId) throw new Error('Not authenticated');
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can create tags');
       const tag = await Tag.create({
         name,
         color: color || '#3B82F6',
@@ -282,8 +269,8 @@ const projectTaskResolver = {
       if (!tag) throw new Error('Tag not found');
       const project = await Project.findById(tag.projectId);
       if (!project) throw new Error('Project not found');
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can update tags');
       if (name !== undefined) tag.name = name;
       if (color !== undefined) tag.color = color;
       await tag.save();
@@ -296,8 +283,8 @@ const projectTaskResolver = {
       if (!tag) throw new Error('Tag not found');
       const project = await Project.findById(tag.projectId);
       if (!project) throw new Error('Project not found');
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can delete tags');
       await Tag.findByIdAndDelete(id);
       // Remove tag from all tasks
       await Task.updateMany({ tags: id }, { $pull: { tags: id } });
@@ -311,7 +298,8 @@ const projectTaskResolver = {
       const project = await Project.findById(projectId);
       if (!project) throw new Error('Project not found');
       const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) throw new Error('Not authorized');
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) throw new Error('Not authorized - only owner can create templates');
       
       const template = await TaskTemplate.create({
         name,
@@ -361,7 +349,7 @@ const projectTaskResolver = {
       logger.info('Template deleted', { templateId: id, userId: context.req.userId });
       return true;
     },
-    createTaskFromTemplate: async (_parent: unknown, { templateId, assignedUser, dueDate }: CreateTaskFromTemplateArgs, context: GraphQLContext) => {
+    createTaskFromTemplate: async (_parent: unknown, { templateId, dueDate }: CreateTaskFromTemplateArgs, context: GraphQLContext) => {
       if (!context.req.userId) throw new Error('Not authenticated');
       const template = await TaskTemplate.findById(templateId).populate('tags');
       if (!template) throw new Error('Template not found');
@@ -369,9 +357,9 @@ const projectTaskResolver = {
       const project = await Project.findById(template.projectId);
       if (!project) throw new Error('Project not found');
       
-      const userObjectId = new mongoose.Types.ObjectId(context.req.userId);
-      if (!project.members.map(String).includes(String(userObjectId))) {
-        throw new Error('Not authorized - you do not have access to this project');
+      const isOwner = String(project.owner) === context.req.userId;
+      if (!isOwner) {
+        throw new Error('Not authorized - only owner can create tasks from templates');
       }
       
       // Create task from template
@@ -382,7 +370,6 @@ const projectTaskResolver = {
         priority: template.priority,
         dueDate: dueDate ? new Date(dueDate) : undefined,
         tags: template.tags,
-        assignedUser: assignedUser ? new mongoose.Types.ObjectId(assignedUser) : userObjectId,
         projectId: template.projectId,
       });
       
@@ -397,11 +384,9 @@ const projectTaskResolver = {
   },
   Project: {
     owner: async (parent: ProjectParent) => User.findById(parent.owner),
-    members: async (parent: ProjectParent) => User.find({ _id: { $in: parent.members } }),
     tasks: async (parent: ProjectParent) => Task.find({ projectId: parent.id }),
   },
   Task: {
-    assignedUser: async (parent: TaskParent) => parent.assignedUser ? User.findById(parent.assignedUser) : null,
     tags: async (parent: TaskParent) => {
       if (!parent.tags || parent.tags.length === 0) return [];
       return Tag.find({ _id: { $in: parent.tags } });

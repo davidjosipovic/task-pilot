@@ -36,7 +36,6 @@ export interface CreateTaskArgs {
   projectId: string;
   title: string;
   description?: string;
-  assignedUser?: string;
   priority?: string;
   dueDate?: string;
   tagIds?: string[];
@@ -49,7 +48,6 @@ export interface UpdateTaskArgs {
   status?: string;
   priority?: string;
   dueDate?: string | null;
-  assignedUser?: string;
   tagIds?: string[];
 }
 
@@ -101,6 +99,5 @@ export interface TemplateIdArgs {
 
 export interface CreateTaskFromTemplateArgs {
   templateId: string;
-  assignedUser?: string;
   dueDate?: string;
 }

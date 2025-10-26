@@ -27,7 +27,6 @@ const GET_TEMPLATES = gql`
       description
       priority
       tags { id name color }
-      createdBy { id name }
       isPublic
     }
   }
@@ -52,7 +51,6 @@ const CREATE_TEMPLATE = gql`
       description
       priority
       tags { id name color }
-      createdBy { id name }
       isPublic
     }
   }
@@ -67,7 +65,6 @@ const UPDATE_TEMPLATE = gql`
       description
       priority
       tags { id name color }
-      createdBy { id name }
       isPublic
     }
   }
@@ -80,8 +77,8 @@ const DELETE_TEMPLATE = gql`
 `;
 
 const CREATE_TASK_FROM_TEMPLATE = gql`
-  mutation CreateTaskFromTemplate($templateId: ID!, $assignedUser: ID, $dueDate: String) {
-    createTaskFromTemplate(templateId: $templateId, assignedUser: $assignedUser, dueDate: $dueDate) {
+  mutation CreateTaskFromTemplate($templateId: ID!, $dueDate: String) {
+    createTaskFromTemplate(templateId: $templateId, dueDate: $dueDate) {
       id
       title
       description
@@ -89,7 +86,6 @@ const CREATE_TASK_FROM_TEMPLATE = gql`
       priority
       dueDate
       tags { id name color }
-      assignedUser { id name }
     }
   }
 `;
@@ -107,7 +103,6 @@ interface Template {
   description: string;
   priority: string;
   tags: Tag[];
-  createdBy: { id: string; name: string };
   isPublic: boolean;
 }
 

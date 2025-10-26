@@ -34,10 +34,14 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const ProjectSchema = new mongoose_1.Schema({
+const TaskTemplateSchema = new mongoose_1.Schema({
+    name: { type: String, required: true },
     title: { type: String, required: true },
-    description: { type: String },
-    owner: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
-    archived: { type: Boolean, default: false },
+    description: { type: String, default: '' },
+    priority: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'], default: 'MEDIUM' },
+    tags: [{ type: mongoose_1.Schema.Types.ObjectId, ref: 'Tag' }],
+    projectId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Project', required: true },
+    createdBy: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User', required: true },
+    isPublic: { type: Boolean, default: false },
 }, { timestamps: true });
-exports.default = mongoose_1.default.model('Project', ProjectSchema);
+exports.default = mongoose_1.default.model('TaskTemplate', TaskTemplateSchema);
