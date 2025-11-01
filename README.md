@@ -4,7 +4,7 @@ A modern, full-stack project management application with Kanban boards, team col
 
 ## 🚀 Live Demo
 
-**Production:** [https://frontend-production-352e.up.railway.app](https://frontend-production-352e.up.railway.app)
+**Production:** [https://taskpilot.up.railway.app](https://taskpilot.up.railway.app)
 
 - **Frontend**: Railway (Docker)
 - **Backend API**: Railway (Docker)
